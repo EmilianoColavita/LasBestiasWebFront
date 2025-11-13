@@ -34,7 +34,7 @@ export async function crearNoticia({ titulo, descripcion, image }) {
   formData.append("descripcion", descripcion);
   formData.append("image", image); // 👈 asegurate que esto siempre se ejecute
 
-  const response = await fetch("http://localhost:8080/api/noticias", {
+  const response = await fetch(`${API_URL}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
