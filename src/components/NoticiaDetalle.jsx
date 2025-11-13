@@ -6,15 +6,17 @@ function NoticiaDetalle() {
   const [noticia, setNoticia] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+
   useEffect(() => {
-    fetch(`http://localhost:8080/api/noticias/${id}`)
+    fetch(`${BASE_URL}/api/noticias/${id}`)
       .then(res => res.json())
       .then(data => {
         setNoticia(data);
         setLoading(false);
       })
       .catch(err => console.error("Error cargando noticia:", err));
-  }, [id]);
+  }, [id, BASE_URL]);
 
   if (loading) {
     return <p className="text-center text-gray-400 mt-20">Cargando noticia...</p>;

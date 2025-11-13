@@ -5,11 +5,13 @@ import { Link } from "react-router-dom";
 function Musica() {
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     const fetchTracks = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/musica");
+        const response = await fetch(`${BASE_URL}/musica`);
         const data = await response.json();
         setTracks(data);
       } catch (error) {
@@ -20,7 +22,7 @@ function Musica() {
     };
 
     fetchTracks();
-  }, []);
+  }, [BASE_URL]);
 
   if (loading) {
     return (

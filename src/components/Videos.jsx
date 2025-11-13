@@ -3,11 +3,13 @@ import { useEffect, useState } from "react";
 function Videos() {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/videos/recientes");
+        const response = await fetch(`${BASE_URL}/api/videos/recientes`);
         const data = await response.json();
         setVideos(data);
       } catch (error) {
@@ -18,7 +20,7 @@ function Videos() {
     };
 
     fetchVideos();
-  }, []);
+  }, [BASE_URL]);
 
   if (loading) {
     return (
