@@ -11,7 +11,7 @@ function Musica() {
   useEffect(() => {
     const fetchTracks = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/musica`);
+        const response = await fetch(`${BASE_URL}/api/musica`);
         const data = await response.json();
         setTracks(data);
       } catch (error) {
