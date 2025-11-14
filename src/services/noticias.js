@@ -1,5 +1,5 @@
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const API_URL = `${BASE_URL}/noticias`;
+const API_URL = `${BASE_URL}/api/noticias`;
 
 // ✅ Obtener todas las noticias
 export async function getNoticias() {

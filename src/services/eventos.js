@@ -1,5 +1,5 @@
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const API_URL = `${BASE_URL}/eventos`;
+const API_URL = `${BASE_URL}/api/eventos`;
 
 // ✅ Obtener todos los eventos
 export async function getEventos() {
