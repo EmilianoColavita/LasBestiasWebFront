@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import { getEventos } from "../services/eventos";
+import ComprarEntrada from "../components/ComprarEntrada";
 
 function Shows() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [eventoActivo, setEventoActivo] = useState(null);
 
   useEffect(() => {
     getEventos().then((data) => {
-      setEventos(data);
+      // Filtrar solo futuros
+      const futuros = data
+        .filter((evento) => new Date(evento.fechaEvento) > new Date())
+        .sort((a, b) => new Date(a.fechaEvento) - new Date(b.fechaEvento));
+
+      setEventos(futuros);
       setLoading(false);
     });
   }, []);
@@ -43,7 +50,7 @@ function Shows() {
               key={evento.id}
               className="flex flex-col md:flex-row items-center md:items-stretch justify-between bg-black bg-opacity-60 rounded-xl border border-gray-700 shadow-lg overflow-hidden hover:scale-[1.02] transition-transform duration-300"
             >
-              {/* Imagen del evento */}
+              {/* Imagen */}
               {evento.imagenUrl && (
                 <div className="w-full md:w-1/3">
                   <img
@@ -54,7 +61,7 @@ function Shows() {
                 </div>
               )}
 
-              {/* Info del evento */}
+              {/* Info */}
               <div className="flex-1 p-4 sm:p-6 flex flex-col justify-center text-center md:text-left">
                 <h3 className="text-xl sm:text-2xl font-bold text-red-500 mb-2 uppercase">
                   {evento.nombre}
@@ -80,14 +87,22 @@ function Shows() {
                 </p>
 
                 <div className="mt-auto">
-                  <a
-                    href={evento.linkCompra || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  {/* Botón COMPRA */}
+                  <button
+                    onClick={() =>
+                      setEventoActivo(
+                        eventoActivo === evento.id ? null : evento.id
+                      )
+                    }
                     className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-md transition-all duration-200 text-sm"
                   >
-                    COMPRA
-                  </a>
+                    {eventoActivo === evento.id ? "Cerrar" : "Comprar entrada"}
+                  </button>
+
+                  {/* Formulario */}
+                  {eventoActivo === evento.id && (
+                    <ComprarEntrada eventoId={evento.id} />
+                  )}
                 </div>
               </div>
             </div>

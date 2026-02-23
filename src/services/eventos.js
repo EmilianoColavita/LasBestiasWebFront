@@ -1,7 +1,6 @@
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const API_URL = `${BASE_URL}/api/eventos`;
 
-// ✅ Obtener todos los eventos
 export async function getEventos() {
   try {
     const response = await fetch(API_URL);
@@ -12,6 +11,8 @@ export async function getEventos() {
     return [];
   }
 }
+
+
 
 // ✅ Obtener un evento por ID
 export async function getEventoById(id) {

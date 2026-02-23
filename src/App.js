@@ -14,7 +14,11 @@ import AdminLayout from "./layouts/AdminLayout";
 import ScrollToHashElement from "./components/ScrollToHashElement";
 import ShowsPage from "./pages/ShowsPage";
 import AdminEventos from "./pages/AdminEventos"; 
+import AdminEntradas from "./pages/AdminEntradas";
 import Contacto from "./pages/Contacto";
+import PagoExitoso from "./pages/PagoExitoso";
+import PagoError from "./pages/PagoError";
+import PagoPendiente from "./pages/PagoPendiente";
 
 
 function App() {
@@ -42,12 +46,18 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/shows" element={<ShowsPage />} />
           <Route path="/contacto" element={<Contacto />} />
+          <Route path="/pago-exitoso" element={<PagoExitoso />} />
+          <Route path="/pago-error" element={<PagoError />} />
+          <Route path="/pago-pendiente" element={<PagoPendiente />} />
+
 
           {/* 🛡️ Rutas de administración (protegidas) */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="noticias" element={<AdminNoticias />} />
             <Route path="/admin/eventos" element={<AdminEventos />} />
+            <Route path="entradas" element={<AdminEntradas />} />
+
             {/* futuras secciones */}
             {/* <Route path="musica" element={<AdminMusica />} /> */}
             {/* <Route path="videos" element={<AdminVideos />} /> */}

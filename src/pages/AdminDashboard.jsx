@@ -21,6 +21,8 @@ export default function AdminDashboard() {
   const sections = [
     { name: "Noticias", path: "/admin/noticias", icon: <Newspaper /> },
     { name: "Eventos", path: "/admin/eventos", icon: <CalendarDays /> },
+    { name: "Entradas", path: "/admin/entradas", icon: <Newspaper /> },
+
   ];
 
   return (
