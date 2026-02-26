@@ -14,8 +14,7 @@ export default function EntradasTable({ entradas, eventos }) {
           <thead className="bg-gray-800 text-yellow-400">
             <tr>
               <th className="py-3 px-4">Evento</th>
-              <th className="py-3 px-4">Nombre</th>
-              <th className="py-3 px-4">Apellido</th>
+              <th className="py-3 px-4">Nombre Comprador</th>
               <th className="py-3 px-4">Email</th>
               <th className="py-3 px-4">Fecha Compra</th>
             </tr>
@@ -24,8 +23,7 @@ export default function EntradasTable({ entradas, eventos }) {
             {entradas.map((e) => (
               <tr key={e.id} className="border-t border-gray-700">
                 <td className="py-3 px-4">{getEventoNombre(e.eventoId)}</td>
-                <td className="py-3 px-4">{e.nombre}</td>
-                <td className="py-3 px-4">{e.apellido}</td>
+                <td className="py-3 px-4">{e.nombreComprador}</td>
                 <td className="py-3 px-4">{e.email}</td>
                 <td className="py-3 px-4">
                   {new Date(e.fechaCompra).toLocaleString("es-ES")}
@@ -47,7 +45,7 @@ export default function EntradasTable({ entradas, eventos }) {
               {getEventoNombre(e.eventoId)}
             </p>
             <p className="text-white font-bold text-lg">
-              {e.nombre} {e.apellido}
+              {e.nombreComprador}
             </p>
             <p className="text-gray-400 text-sm">{e.email}</p>
             <p className="text-gray-500 text-xs mt-2">
