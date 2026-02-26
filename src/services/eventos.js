@@ -1,5 +1,8 @@
+import api from "../api/axios";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const API_URL = `${BASE_URL}/api/eventos`;
+
 
 export async function getEventos() {
   try {
@@ -26,53 +29,53 @@ export async function getEventoById(id) {
   }
 }
 
-// ✅ Crear evento (multipart/form-data)
-export async function crearEvento({ nombre, descripcion, lugar, ciudad, fechaEvento, image }) {
-  const token = localStorage.getItem("token");
+
+
+export const crearEvento = async (evento) => {
   const formData = new FormData();
 
-  formData.append("nombre", nombre);
-  formData.append("descripcion", descripcion);
-  formData.append("lugar", lugar);
-  formData.append("ciudad", ciudad);
-  formData.append("fechaEvento", fechaEvento);
-  if (image) formData.append("image", image);
+  formData.append("nombre", evento.nombre);
+  formData.append("descripcion", evento.descripcion);
+  formData.append("lugar", evento.lugar);
+  formData.append("ciudad", evento.ciudad);
+  formData.append("fechaEvento", evento.fechaEvento);
+  formData.append("precio", evento.precio);
 
-  const response = await fetch(API_URL, {
-    method: "POST",
+  if (evento.image) {
+    formData.append("image", evento.image);
+  }
+
+  const response = await api.post("/api/eventos", formData, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
-    body: formData,
   });
 
-  if (!response.ok) throw new Error("Error al crear el evento");
-  return await response.json();
-}
+  return response.data;
+};
 
-// ✅ Actualizar evento (multipart/form-data)
-export async function actualizarEvento(id, { nombre, descripcion, lugar, ciudad, fechaEvento, image }) {
-  const token = localStorage.getItem("token");
+export const actualizarEvento = async (id, evento) => {
   const formData = new FormData();
 
-  formData.append("nombre", nombre);
-  formData.append("descripcion", descripcion);
-  formData.append("lugar", lugar);
-  formData.append("ciudad", ciudad);
-  formData.append("fechaEvento", fechaEvento);
-  if (image) formData.append("image", image);
+  formData.append("nombre", evento.nombre);
+  formData.append("descripcion", evento.descripcion);
+  formData.append("lugar", evento.lugar);
+  formData.append("ciudad", evento.ciudad);
+  formData.append("fechaEvento", evento.fechaEvento);
+  formData.append("precio", evento.precio);
 
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: "PUT",
+  if (evento.image) {
+    formData.append("image", evento.image);
+  }
+
+  const response = await api.put(`/api/eventos/${id}`, formData, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
     },
-    body: formData,
   });
 
-  if (!response.ok) throw new Error("Error al actualizar el evento");
-  return await response.json();
-}
+  return response.data;
+};
 
 // ✅ Eliminar evento
 export async function eliminarEvento(id) {
