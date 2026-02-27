@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 
 export default function ScannerQR({ onValidacionExitosa }) {
@@ -7,6 +7,9 @@ export default function ScannerQR({ onValidacionExitosa }) {
   const [modoScanner, setModoScanner] = useState(false);
   const [resultado, setResultado] = useState(null);
   const [procesando, setProcesando] = useState(false);
+
+  const audioOk = useRef(null);
+  const audioError = useRef(null);
 
   const cerrarResultado = () => {
     setResultado(null);
@@ -17,7 +20,7 @@ export default function ScannerQR({ onValidacionExitosa }) {
     if (resultado) {
       const timer = setTimeout(() => {
         cerrarResultado();
-      }, 5000); // 🔥 5 segundos (cambiá acá si querés más)
+      }, 7000);
 
       return () => clearTimeout(timer);
     }
@@ -51,14 +54,20 @@ export default function ScannerQR({ onValidacionExitosa }) {
       if (response.ok) {
         const data = JSON.parse(text);
 
+        // 🔊 SONIDO VALIDADO
+        audioOk.current?.play();
+
         setResultado({
           tipo: "success",
-          mensaje: `Ingreso permitido`,
-          nombre: `${data.nombre} ${data.apellido}`,
+          mensaje: "Ingreso permitido",
+          nombre: data.comprador,
         });
 
         onValidacionExitosa();
       } else {
+        // 🚨 SONIDO ERROR
+        audioError.current?.play();
+
         setResultado({
           tipo: "error",
           mensaje: text,
@@ -66,6 +75,9 @@ export default function ScannerQR({ onValidacionExitosa }) {
       }
     } catch (err) {
       console.error(err);
+
+      audioError.current?.play();
+
       setResultado({
         tipo: "error",
         mensaje: "Error al validar entrada",
@@ -79,6 +91,10 @@ export default function ScannerQR({ onValidacionExitosa }) {
 
   return (
     <div className="mb-6">
+      {/* 🔊 Audios ocultos */}
+      <audio ref={audioOk} src="/sounds/ok.mp3" preload="auto" />
+      <audio ref={audioError} src="/sounds/error.mp3" preload="auto" />
+
       <button
         onClick={() => {
           setModoScanner(!modoScanner);
@@ -95,19 +111,16 @@ export default function ScannerQR({ onValidacionExitosa }) {
             Escanear QR 🎟️
           </h2>
 
-          {/* 🔥 ESCÁNER MÁS CHICO Y CENTRADO */}
           <div className="flex justify-center">
             <div className="w-full max-w-sm md:max-w-md lg:max-w-lg">
               <Scanner
                 onScan={handleScan}
                 onError={(error) => console.error(error)}
                 styles={{
-                  container: {
-                    width: "100%",
-                  },
+                  container: { width: "100%" },
                   video: {
                     width: "100%",
-                    height: "280px", // 🔥 tamaño reducido
+                    height: "280px",
                     objectFit: "cover",
                     borderRadius: "12px",
                   },
@@ -116,7 +129,6 @@ export default function ScannerQR({ onValidacionExitosa }) {
             </div>
           </div>
 
-          {/* 🔥 RESULTADO GRANDE Y CLARO */}
           {resultado && (
             <div
               className={`mt-6 p-6 rounded-xl text-white font-bold text-lg ${
