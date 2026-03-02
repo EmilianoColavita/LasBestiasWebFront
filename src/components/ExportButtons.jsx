@@ -1,5 +1,3 @@
-// src/components/ExportButtons.jsx
-
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -10,28 +8,39 @@ export default function ExportButtons({ entradas, eventos }) {
     return ev ? ev.nombre : "Desconocido";
   };
 
+  // 🔹 FORMATEO DE FECHA
+  const formatFecha = (fecha) => {
+    if (!fecha) return "-";
+    return new Date(fecha).toLocaleString("es-AR");
+  };
+
+  // 🔹 PREPARAR DATOS UNIFICADOS
+  const prepararDatos = () => {
+    return entradas.map((e) => ({
+      Evento: getEventoNombre(e.eventoId),
+      Comprador: e.nombreComprador || "-",
+      Email: e.email || "-",
+      Telefono: e.telefono || "-",          // si lo agregaste
+      DNI: e.dni || "-",                    // si lo agregaste
+      "Payment ID": e.paymentId || "-",
+      "Fecha Compra": formatFecha(e.fechaCompra),
+    }));
+  };
+
+  // =============================
+  // 📄 EXPORTAR CSV
+  // =============================
   const exportarCSV = () => {
-    const header = [
-      "Evento",
-      "Nombre",
-      "Apellido",
-      "Email",
-      "Payment ID",
-      "Fecha Compra",
-    ];
+    const data = prepararDatos();
 
-    const rows = entradas.map((e) => [
-      getEventoNombre(e.eventoId),
-      e.nombre,
-      e.apellido,
-      e.email,
-      e.paymentId,
-      new Date(e.fechaCompra).toLocaleString("es-ES"),
-    ]);
+    const headers = Object.keys(data[0] || {});
+    const rows = data.map((row) =>
+      headers.map((field) => `"${row[field]}"`).join(",")
+    );
 
-    let csvContent =
+    const csvContent =
       "data:text/csv;charset=utf-8," +
-      [header, ...rows].map((e) => e.join(",")).join("\n");
+      [headers.join(","), ...rows].join("\n");
 
     const link = document.createElement("a");
     link.href = encodeURI(csvContent);
@@ -39,15 +48,11 @@ export default function ExportButtons({ entradas, eventos }) {
     link.click();
   };
 
+  // =============================
+  // 📊 EXPORTAR EXCEL
+  // =============================
   const exportarExcel = () => {
-    const data = entradas.map((e) => ({
-      Evento: getEventoNombre(e.eventoId),
-      Nombre: e.nombre,
-      Apellido: e.apellido,
-      Email: e.email,
-      "Payment ID": e.paymentId,
-      "Fecha Compra": new Date(e.fechaCompra).toLocaleString("es-ES"),
-    }));
+    const data = prepararDatos();
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -55,31 +60,27 @@ export default function ExportButtons({ entradas, eventos }) {
     XLSX.writeFile(wb, "entradas.xlsx");
   };
 
+  // =============================
+  // 📕 EXPORTAR PDF
+  // =============================
   const exportarPDF = () => {
+    const data = prepararDatos();
     const doc = new jsPDF();
 
-    doc.text("Listado de Entradas", 14, 20);
+    doc.setFontSize(16);
+    doc.text("Listado de Entradas - LasBestias", 14, 20);
 
-    const tableData = entradas.map((e) => [
-      getEventoNombre(e.eventoId),
-      e.nombre,
-      e.apellido,
-      e.email,
-      e.paymentId,
-      new Date(e.fechaCompra).toLocaleString("es-ES"),
-    ]);
+    const headers = Object.keys(data[0] || {});
+    const body = data.map((row) =>
+      headers.map((field) => row[field])
+    );
 
     autoTable(doc, {
       startY: 30,
-      head: [[
-        "Evento",
-        "Nombre",
-        "Apellido",
-        "Email",
-        "Payment ID",
-        "Fecha Compra",
-      ]],
-      body: tableData,
+      head: [headers],
+      body: body,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [22, 160, 133] },
     });
 
     doc.save("entradas.pdf");
@@ -93,12 +94,14 @@ export default function ExportButtons({ entradas, eventos }) {
       >
         Exportar CSV
       </button>
+
       <button
         onClick={exportarExcel}
         className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg"
       >
         Exportar Excel
       </button>
+
       <button
         onClick={exportarPDF}
         className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"

@@ -45,7 +45,17 @@ function Musica() {
   return (
       <section
         id="musica"
-        className="py-20 px-8 bg-black bg-cover bg-center bg-no-repeat relative"
+        className="
+          relative
+          py-20
+          px-6 md:px-8
+          bg-black
+          bg-no-repeat
+          bg-cover
+          bg-[center_top]
+          md:bg-center
+          min-h-screen
+        "
         style={{
           backgroundImage: "url('/images/fondo-microfono.jpeg')",
         }}

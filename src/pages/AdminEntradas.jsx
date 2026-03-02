@@ -29,21 +29,30 @@ export default function AdminEntradas() {
     cargarEntradas();
   }, []);
 
+  // 🔒 SOLO ENTRADAS DE EVENTOS QUE EXISTEN
+  const entradasActivas = useMemo(() => {
+    return entradas.filter((entrada) =>
+      eventos.some((evento) => evento.id === entrada.eventoId)
+    );
+  }, [entradas, eventos]);
+
   // 🔎 FILTRO POR EVENTO
   const entradasFiltradasPorEvento =
     eventoSeleccionado === "todos"
-      ? entradas
-      : entradas.filter((e) => e.eventoId === Number(eventoSeleccionado));
+      ? entradasActivas
+      : entradasActivas.filter(
+          (e) => e.eventoId === Number(eventoSeleccionado)
+        );
 
   // 🔎 BUSCADOR POR NOMBRE
   const entradasFiltradas = entradasFiltradasPorEvento.filter((e) =>
     e.nombreComprador.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  // 📊 RESUMEN POR EVENTO
+  // 📊 RESUMEN POR EVENTO (solo eventos activos)
   const resumenEventos = useMemo(() => {
     return eventos.map((evento) => {
-      const entradasEvento = entradas.filter(
+      const entradasEvento = entradasActivas.filter(
         (e) => e.eventoId === evento.id
       );
 
@@ -56,7 +65,7 @@ export default function AdminEntradas() {
         totalRecaudado,
       };
     });
-  }, [entradas, eventos]);
+  }, [entradasActivas, eventos]);
 
   return (
     <div className="text-gray-200">
