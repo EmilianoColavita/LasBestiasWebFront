@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 
 function NoticiaDetalle() {
   const { id } = useParams();
@@ -32,7 +33,7 @@ function NoticiaDetalle() {
         <img
           src={noticia.imagenUrl}
           alt={noticia.titulo}
-          className="rounded-lg mb-4 w-full object-contain max-h-60"
+          className="w-full h-auto max-h-[80vh] object-contain rounded-2xl mb-8"
         />
         <h1 className="text-4xl font-extrabold text-yellow-400 mb-4">{noticia.titulo}</h1>
         
@@ -45,9 +46,11 @@ function NoticiaDetalle() {
           })}
         </p>
         
-        <p className="text-gray-300 text-lg leading-relaxed mb-12">
-          {noticia.descripcion}
-        </p>
+        <div className="text-gray-300 text-lg leading-relaxed mb-12 prose prose-invert max-w-none">
+          <ReactMarkdown>
+            {noticia.descripcion}
+          </ReactMarkdown>
+        </div>
 
         <Link
           to="/"

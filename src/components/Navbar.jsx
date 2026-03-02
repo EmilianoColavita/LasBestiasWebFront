@@ -61,7 +61,7 @@ function Navbar() {
           </button>
 
           <button
-            onClick={() => handleNavClick("musica")}
+            onClick={() => navigate("/musica")}
             className="hover:text-red-500 transition duration-300 drop-shadow-sm text-left md:text-center py-1"
           >
             MÚSICA

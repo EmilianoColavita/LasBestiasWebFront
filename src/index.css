@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Scroll horizontal personalizado */
+::-webkit-scrollbar {
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #facc15; /* amarillo */
+  border-radius: 10px;
+}

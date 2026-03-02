@@ -1,11 +1,10 @@
-// components/Musica.jsx
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 function Musica() {
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   useEffect(() => {
@@ -40,39 +39,40 @@ function Musica() {
     );
   }
 
-  const limitedTracks = tracks.slice(0, 3); // 👈 solo 3 canciones
+  const limitedTracks = tracks.slice(0, 3); // 👈 SOLO 3 como antes
 
   return (
-      <section
-        id="musica"
-        className="
-          relative
-          py-20
-          px-6 md:px-8
-          bg-black
-          bg-no-repeat
-          bg-cover
-          bg-[center_top]
-          md:bg-center
-          min-h-screen
-        "
-        style={{
-          backgroundImage: "url('/images/fondo-microfono.jpeg')",
-        }}
-      >
-        {/* 🟢 Overlay oscuro para contraste */}
-        <div className="absolute inset-0 bg-black/60"></div>
+    <section
+      id="musica"
+      className="
+        relative
+        py-20
+        px-6 md:px-8
+        bg-black
+        bg-no-repeat
+        bg-cover
+        bg-[center_top]
+        md:bg-center
+        min-h-screen
+      "
+      style={{
+        backgroundImage: "url('/images/fondo-microfono.jpeg')",
+      }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/60"></div>
 
-        {/* Contenido encima del overlay */}
-        <div className="relative max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-extrabold text-green-400 mb-10">Música</h2>
+      <div className="relative max-w-6xl mx-auto text-center">
+        <h2 className="text-4xl font-extrabold text-green-400 mb-10">
+          Música
+        </h2>
 
-        {/* 🎵 Mostrar solo 3 canciones */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* 🔥 Scroll horizontal SOLO en mobile */}
+        <div className="flex md:grid md:grid-cols-3 gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4">
           {limitedTracks.map((track) => (
             <div
               key={track.id}
-              className="bg-gray-900 rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:scale-105 hover:shadow-green-500/20"
+              className="min-w-[280px] md:min-w-0 bg-gray-900 rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:scale-105 hover:shadow-green-500/20 snap-start"
             >
               {track.imagenUrl && (
                 <img
@@ -81,13 +81,15 @@ function Musica() {
                   className="w-full h-56 object-cover"
                 />
               )}
+
               <div className="p-4">
                 <h3 className="text-xl font-semibold text-white mb-2">
                   {track.titulo}
                 </h3>
+
                 {track.spotifyId && (
                   <iframe
-                    src={`https://open.spotify.com/embed/track/${track.spotifyId}?utm_source=generator`}
+                    src={`https://open.spotify.com/embed/track/${track.spotifyId}`}
                     width="100%"
                     height="80"
                     frameBorder="0"
@@ -97,6 +99,7 @@ function Musica() {
                     title={track.titulo}
                   ></iframe>
                 )}
+
                 {track.urlSpotify && (
                   <a
                     href={track.urlSpotify}
@@ -112,7 +115,6 @@ function Musica() {
           ))}
         </div>
 
-        {/* 🔗 Botón "Ver toda la música" */}
         <div className="mt-10">
           <Link
             to="/musica"

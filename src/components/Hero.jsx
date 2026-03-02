@@ -74,7 +74,11 @@ function Hero() {
           })}
         </p>
 
-        <p className="text-gray-300 mb-4 text-sm">{ultimaNoticia.descripcion}</p>
+        <p className="text-gray-300 mb-4 text-sm">
+          {ultimaNoticia.descripcion.length > 100
+            ? ultimaNoticia.descripcion.substring(0, 100) + "..."
+            : ultimaNoticia.descripcion}
+        </p>
 
         <Link
           to={`/noticia/${ultimaNoticia.id}`}
