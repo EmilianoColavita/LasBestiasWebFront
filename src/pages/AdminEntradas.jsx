@@ -5,6 +5,7 @@ import EntradasTable from "../components/EntradasTable";
 import ExportButtons from "../components/ExportButtons";
 
 export default function AdminEntradas() {
+
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
   const [entradas, setEntradas] = useState([]);
@@ -29,7 +30,7 @@ export default function AdminEntradas() {
     cargarEntradas();
   }, []);
 
-  // 🔒 SOLO ENTRADAS DE EVENTOS QUE EXISTEN
+  // 🔒 SOLO ENTRADAS DE EVENTOS EXISTENTES
   const entradasActivas = useMemo(() => {
     return entradas.filter((entrada) =>
       eventos.some((evento) => evento.id === entrada.eventoId)
@@ -49,22 +50,51 @@ export default function AdminEntradas() {
     e.nombreComprador.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  // 📊 RESUMEN POR EVENTO (solo eventos activos)
+  // 📊 ESTADISTICAS SOLO DEL EVENTO SELECCIONADO
+  const estadisticas = useMemo(() => {
+
+    if (eventoSeleccionado === "todos") return null;
+
+    const usadas = entradasFiltradasPorEvento.filter(e => e.usada).length;
+    const pendientes = entradasFiltradasPorEvento.filter(e => !e.usada).length;
+
+    return {
+      usadas,
+      pendientes
+    };
+
+  }, [entradasFiltradasPorEvento, eventoSeleccionado]);
+
+  // 📊 RESUMEN POR EVENTO
   const resumenEventos = useMemo(() => {
+
     return eventos.map((evento) => {
+
       const entradasEvento = entradasActivas.filter(
         (e) => e.eventoId === evento.id
       );
 
-      const cantidadVendidas = entradasEvento.length;
-      const totalRecaudado = cantidadVendidas * (evento.precio || 0);
+      const vendidas = entradasEvento.length;
+      const usadas = entradasEvento.filter(e => e.usada).length;
+      const pendientes = vendidas - usadas;
+
+      const ocupacion = vendidas > 0
+        ? Math.round((usadas / vendidas) * 100)
+        : 0;
+
+      const totalRecaudado = vendidas * (evento.precio || 0);
 
       return {
         ...evento,
-        cantidadVendidas,
-        totalRecaudado,
+        vendidas,
+        usadas,
+        pendientes,
+        ocupacion,
+        totalRecaudado
       };
+
     });
+
   }, [entradasActivas, eventos]);
 
   return (
@@ -74,9 +104,26 @@ export default function AdminEntradas() {
         Entradas Vendidas 🎟️
       </h1>
 
+      {/* 📊 ESTADISTICAS SOLO CUANDO SE SELECCIONA EVENTO */}
+      {eventoSeleccionado !== "todos" && estadisticas && (
+        <div className="grid grid-cols-2 gap-4 mb-6">
+
+          <div className="bg-green-700 p-4 rounded-lg text-center">
+            <p className="text-sm text-green-200">Ingresaron</p>
+            <p className="text-2xl font-bold">{estadisticas.usadas}</p>
+          </div>
+
+          <div className="bg-red-700 p-4 rounded-lg text-center">
+            <p className="text-sm text-red-200">Pendientes</p>
+            <p className="text-2xl font-bold">{estadisticas.pendientes}</p>
+          </div>
+
+        </div>
+      )}
+
       <ScannerQR onValidacionExitosa={cargarEntradas} />
 
-      {/* 🔘 BOTÓN MOSTRAR/OCULTAR RESUMEN */}
+      {/* BOTON RESUMEN */}
       <div className="mb-4">
         <button
           onClick={() => setMostrarResumen(!mostrarResumen)}
@@ -86,19 +133,23 @@ export default function AdminEntradas() {
         </button>
       </div>
 
-      {/* 📊 RESUMEN DESPLEGABLE */}
+      {/* RESUMEN EVENTOS */}
       {mostrarResumen && (
         <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 mb-6">
+
           <h2 className="text-yellow-400 font-bold mb-4">
             Resumen por Evento
           </h2>
 
           <div className="grid md:grid-cols-3 gap-4">
+
             {resumenEventos.map((ev) => (
+
               <div
                 key={ev.id}
                 className="bg-gray-800 p-4 rounded-lg border border-gray-700"
               >
+
                 <p className="text-yellow-400 font-semibold">
                   {ev.nombre}
                 </p>
@@ -106,7 +157,28 @@ export default function AdminEntradas() {
                 <p className="text-sm text-gray-400">
                   🎟️ Vendidas:{" "}
                   <span className="text-white font-bold">
-                    {ev.cantidadVendidas}
+                    {ev.vendidas}
+                  </span>
+                </p>
+
+                <p className="text-sm text-gray-400">
+                  ✅ Ingresaron:{" "}
+                  <span className="text-green-400 font-bold">
+                    {ev.usadas}
+                  </span>
+                </p>
+
+                <p className="text-sm text-gray-400">
+                  ⏳ Pendientes:{" "}
+                  <span className="text-red-400 font-bold">
+                    {ev.pendientes}
+                  </span>
+                </p>
+
+                <p className="text-sm text-gray-400">
+                  📊 Ocupación:{" "}
+                  <span className="text-yellow-400 font-bold">
+                    {ev.ocupacion}%
                   </span>
                 </p>
 
@@ -116,33 +188,41 @@ export default function AdminEntradas() {
                     ${ev.totalRecaudado.toLocaleString("es-AR")}
                   </span>
                 </p>
+
               </div>
+
             ))}
+
           </div>
         </div>
       )}
 
-      {/* 🎫 FILTRO POR EVENTO */}
+      {/* FILTRO EVENTO */}
       <div className="mb-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
+
         <label className="block text-sm mb-2">
           Filtrar por evento:
         </label>
+
         <select
           value={eventoSeleccionado}
           onChange={(e) => setEventoSeleccionado(e.target.value)}
           className="bg-gray-900 border border-gray-700 p-3 rounded w-full text-gray-200"
         >
           <option value="todos">Todos los eventos</option>
+
           {eventos.map((ev) => (
             <option key={ev.id} value={ev.id}>
               {ev.nombre} - {ev.ciudad}
             </option>
           ))}
+
         </select>
       </div>
 
-      {/* 🔎 BUSCADOR */}
+      {/* BUSCADOR */}
       <div className="mb-6">
+
         <input
           type="text"
           placeholder="Buscar por nombre del comprador..."
@@ -150,11 +230,13 @@ export default function AdminEntradas() {
           onChange={(e) => setBusqueda(e.target.value)}
           className="w-full bg-gray-900 border border-gray-700 p-3 rounded text-gray-200"
         />
+
       </div>
 
       <ExportButtons entradas={entradasFiltradas} eventos={eventos} />
 
       <EntradasTable entradas={entradasFiltradas} eventos={eventos} />
+
     </div>
   );
 }

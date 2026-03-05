@@ -37,10 +37,10 @@ function Hero() {
 
   return (
     <section
-      className="min-h-screen bg-cover bg-center flex items-center justify-center md:justify-start md:pl-[10%] px-4 text-center md:text-left relative"
+      className="min-h-screen bg-cover bg-left md:bg-center flex items-center justify-center md:justify-start md:pl-[10%] px-4 text-center md:text-left relative"
       style={{ backgroundImage: "url('/images/fondo1.png')" }}
     >
-      {/* Logo animado - centrado correctamente en horizontal */}
+      {/* Logo animado */}
       <motion.div
         className="absolute top-6 left-0 right-0 flex justify-center md:hidden z-20 pointer-events-none"
         initial={{ opacity: 0, scale: 0.75 }}
@@ -55,13 +55,14 @@ function Hero() {
         />
       </motion.div>
 
-      {/* Cuadro de noticia: desplazamos un poco hacia abajo en móvil para evitar solapamiento con el logo */}
+      {/* Noticia */}
       <div className="bg-gray-900 bg-opacity-80 rounded-2xl shadow-2xl p-6 w-full max-w-sm sm:max-w-md md:max-w-lg mt-20 md:mt-0 relative z-10">
         <img
           src={ultimaNoticia.imagenUrl}
           alt={ultimaNoticia.titulo}
           className="rounded-xl mb-4 w-full h-auto max-h-96 object-contain"
         />
+
         <h3 className="text-xl font-bold text-yellow-400 mb-2">
           {ultimaNoticia.titulo}
         </h3>

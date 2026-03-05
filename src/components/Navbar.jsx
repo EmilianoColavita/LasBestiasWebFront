@@ -1,21 +1,33 @@
 import { FaInstagram, FaYoutube, FaSpotify, FaBars, FaTimes } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const isLoggedIn = !!token;
+
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Cerrar menú automáticamente cuando cambia la ruta
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     window.location.href = "/";
   };
 
+  const handleNavigate = (path) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
+
   const handleNavClick = (sectionId) => {
-    setMenuOpen(false); // cierra menú al navegar
+    setMenuOpen(false);
+
     if (location.pathname === "/") {
       const section = document.getElementById(sectionId);
       if (section) {
@@ -28,9 +40,11 @@ function Navbar() {
 
   return (
     <nav className="flex justify-between items-center px-6 md:px-10 py-5 bg-black text-white shadow-md relative">
-      {/* IZQUIERDA: enlaces + botón hamburguesa */}
+
+      {/* IZQUIERDA */}
       <div className="flex items-center gap-4">
-        {/* Botón hamburguesa solo visible en móvil */}
+
+        {/* Botón hamburguesa */}
         <button
           className="md:hidden text-2xl text-white focus:outline-none"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -38,7 +52,7 @@ function Navbar() {
           {menuOpen ? <FaTimes /> : <FaBars />}
         </button>
 
-        {/* Menú principal */}
+        {/* MENÚ */}
         <div
           className={`${
             menuOpen
@@ -46,8 +60,9 @@ function Navbar() {
               : "hidden"
           } md:flex md:static md:flex-row md:gap-6 text-lg font-extrabold tracking-wide`}
         >
+
           <button
-            onClick={() => handleNavClick("/")}
+            onClick={() => handleNavigate("/")}
             className="hover:text-red-500 transition duration-300 drop-shadow-sm text-left md:text-center py-1"
           >
             INICIO
@@ -61,7 +76,7 @@ function Navbar() {
           </button>
 
           <button
-            onClick={() => navigate("/musica")}
+            onClick={() => handleNavigate("/musica")}
             className="hover:text-red-500 transition duration-300 drop-shadow-sm text-left md:text-center py-1"
           >
             MÚSICA
@@ -75,34 +90,36 @@ function Navbar() {
           </button>
 
           <button
-            onClick={() => navigate("/shows")}
+            onClick={() => handleNavigate("/shows")}
             className="hover:text-red-500 transition duration-300 drop-shadow-sm text-left md:text-center py-1"
           >
             SHOWS
           </button>
 
           <button
-            onClick={() => navigate("/contacto")}
+            onClick={() => handleNavigate("/contacto")}
             className="hover:text-red-500 transition duration-300 drop-shadow-sm text-left md:text-center py-1"
           >
             CONTACTO
           </button>
 
-          {/* DASHBOARD visible solo si está logueado */}
+          {/* DASHBOARD */}
           {isLoggedIn && (
             <Link
               to="/admin/dashboard"
-              onClick={() => setMenuOpen(false)}
               className="text-yellow-500 hover:text-yellow-400 transition duration-300 drop-shadow-sm text-left md:text-center py-1"
             >
               DASHBOARD
             </Link>
           )}
 
-          {/* ADMIN CONECTADO — visible en mobile dentro del menú */}
+          {/* ADMIN MOBILE */}
           {isLoggedIn && (
             <div className="flex flex-col gap-2 mt-4 md:hidden border-t border-gray-700 pt-3">
-              <span className="text-sm text-gray-300 italic">ADMIN CONECTADO</span>
+              <span className="text-sm text-gray-300 italic">
+                ADMIN CONECTADO
+              </span>
+
               <button
                 onClick={handleLogout}
                 className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition duration-300 w-fit"
@@ -114,8 +131,9 @@ function Navbar() {
         </div>
       </div>
 
-      {/* DERECHA: redes sociales + admin (solo en escritorio) */}
+      {/* DERECHA */}
       <div className="flex gap-4 items-center">
+
         <a
           href="https://www.instagram.com/lasbestiasok/"
           target="_blank"
@@ -146,10 +164,13 @@ function Navbar() {
           <FaSpotify size={24} />
         </a>
 
-        {/* En escritorio, mantener admin info visible */}
+        {/* ADMIN DESKTOP */}
         {isLoggedIn && (
           <div className="hidden md:flex items-center gap-3 ml-4">
-            <span className="text-sm text-gray-300 italic">ADMIN CONECTADO</span>
+            <span className="text-sm text-gray-300 italic">
+              ADMIN CONECTADO
+            </span>
+
             <button
               onClick={handleLogout}
               className="text-sm bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition duration-300"
