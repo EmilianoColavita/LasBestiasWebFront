@@ -110,7 +110,7 @@ function Shows() {
         </div>
 
         <p className="text-center text-sm text-gray-400 mt-10 italic">
-          Mantente al día con LAS BESTIAS ⚡
+          Mantente al día con LAS BESTIAS
         </p>
       </div>
     </section>

@@ -156,7 +156,7 @@ export default function Contacto() {
         </form>
 
         <p className="text-xs sm:text-sm text-gray-500 mt-10 italic">
-          ¡Gracias por ser parte de la comunidad bestial! ⚡
+          ¡Gracias por ser parte de la comunidad bestial!
         </p>
 
       </div>
