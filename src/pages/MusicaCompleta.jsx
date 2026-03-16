@@ -73,7 +73,7 @@ function MusicaCompleta() {
                     <img
                       src={track.imagenUrl}
                       alt={track.titulo}
-                      className="w-full h-56 object-cover"
+                      className="w-full aspect-square object-cover"
                     />
                   )}
                   <div className="p-4">
