@@ -82,7 +82,20 @@ export default function AdminEntradas() {
         ? Math.round((usadas / vendidas) * 100)
         : 0;
 
-      const totalRecaudado = vendidas * (evento.precio || 0);
+      const TRAMOS = [
+        { hasta: new Date("2026-04-15T00:00:00"), precio: 10500 },
+          { hasta: null, precio: 14000 } // fallback SIEMPRE
+       // { hasta: new Date("2026-05-01T00:00:00"), precio: 14000 },
+       // { hasta: null, precio: 18000 } // futuro
+      ];
+
+      const totalRecaudado = entradasEvento.reduce((acc, e) => {
+        const fechaCompra = new Date(e.fechaCompra);
+
+        const tramo = TRAMOS.find(t => !t.hasta || fechaCompra < t.hasta);
+
+        return acc + tramo.precio;
+      }, 0);
 
       return {
         ...evento,
