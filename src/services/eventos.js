@@ -1,4 +1,5 @@
 import api from "../api/axios";
+import { authFetch } from "../api/authFetch";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const API_URL = `${BASE_URL}/api/eventos`;
@@ -79,13 +80,8 @@ export const actualizarEvento = async (id, evento) => {
 
 // ✅ Eliminar evento
 export async function eliminarEvento(id) {
-  const token = localStorage.getItem("token");
-
-  const response = await fetch(`${API_URL}/${id}`, {
+  const response = await authFetch(`${API_URL}/${id}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) throw new Error("Error al eliminar el evento");

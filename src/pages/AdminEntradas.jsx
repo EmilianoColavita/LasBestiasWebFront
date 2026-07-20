@@ -3,6 +3,7 @@ import { getEntradas } from "../services/entradas";
 import ScannerQR from "../components/ScannerQR";
 import EntradasTable from "../components/EntradasTable";
 import ExportButtons from "../components/ExportButtons";
+import InvitadosEvento from "../components/InvitadosEvento";
 
 export default function AdminEntradas() {
 
@@ -13,17 +14,18 @@ export default function AdminEntradas() {
   const [eventoSeleccionado, setEventoSeleccionado] = useState("todos");
   const [busqueda, setBusqueda] = useState("");
   const [mostrarResumen, setMostrarResumen] = useState(false);
+  const [mostrarInvitados, setMostrarInvitados] = useState(false);
 
-  const cargarEventos = async () => {
+  const cargarEventos = useMemo(() => async () => {
     const res = await fetch(`${BASE_URL}/api/eventos`);
     const data = await res.json();
     setEventos(data);
-  };
+  }, [BASE_URL]);
 
-  const cargarEntradas = async () => {
+  const cargarEntradas = useMemo(() => async () => {
     const data = await getEntradas();
     setEntradas(data);
-  };
+  }, []);
 
   useEffect(() => {
     cargarEventos();
@@ -38,17 +40,48 @@ export default function AdminEntradas() {
   }, [entradas, eventos]);
 
   // 🔎 FILTRO POR EVENTO
-  const entradasFiltradasPorEvento =
-    eventoSeleccionado === "todos"
-      ? entradasActivas
-      : entradasActivas.filter(
-          (e) => e.eventoId === Number(eventoSeleccionado)
-        );
+  // SI NO HAY EVENTO SELECCIONADO → NO MOSTRAR NADA
+  const entradasFiltradasPorEvento = useMemo(() => {
 
-  // 🔎 BUSCADOR POR NOMBRE
-  const entradasFiltradas = entradasFiltradasPorEvento.filter((e) =>
-    e.nombreComprador.toLowerCase().includes(busqueda.toLowerCase())
-  );
+    if (eventoSeleccionado === "") {
+      return [];
+    }
+
+    return entradasActivas.filter(
+      (e) => e.eventoId === Number(eventoSeleccionado)
+    );
+
+  }, [eventoSeleccionado, entradasActivas]);
+  
+  // 🔎 BUSCADOR + ORDEN POR FECHA MÁS NUEVA
+  const entradasFiltradas = entradasFiltradasPorEvento
+    .filter((e) =>
+      e.nombreComprador.toLowerCase().includes(busqueda.toLowerCase())
+    )
+    .sort((a, b) =>
+      new Date(b.fechaCompra) - new Date(a.fechaCompra)
+    );
+
+  // 💸 RESUMEN POR PRECIO
+  const resumenPrecios = useMemo(() => {
+    const mapa = {};
+
+    entradasFiltradasPorEvento.forEach(e => {
+      const precio = e.precioPagado || 0;
+
+      if (!mapa[precio]) {
+        mapa[precio] = {
+          cantidad: 0,
+          total: 0
+        };
+      }
+
+      mapa[precio].cantidad++;
+      mapa[precio].total += precio;
+    });
+
+    return mapa;
+  }, [entradasFiltradasPorEvento]);
 
   // 📊 ESTADISTICAS SOLO DEL EVENTO SELECCIONADO
   const estadisticas = useMemo(() => {
@@ -82,19 +115,8 @@ export default function AdminEntradas() {
         ? Math.round((usadas / vendidas) * 100)
         : 0;
 
-      const TRAMOS = [
-        { hasta: new Date("2026-04-15T00:00:00"), precio: 10500 },
-          { hasta: null, precio: 14000 } // fallback SIEMPRE
-       // { hasta: new Date("2026-05-01T00:00:00"), precio: 14000 },
-       // { hasta: null, precio: 18000 } // futuro
-      ];
-
       const totalRecaudado = entradasEvento.reduce((acc, e) => {
-        const fechaCompra = new Date(e.fechaCompra);
-
-        const tramo = TRAMOS.find(t => !t.hasta || fechaCompra < t.hasta);
-
-        return acc + tramo.precio;
+        return acc + (e.precioPagado || 0);
       }, 0);
 
       return {
@@ -110,8 +132,12 @@ export default function AdminEntradas() {
 
   }, [entradasActivas, eventos]);
 
+  // 💰 TOTAL GENERAL
+  const totalGeneral = Object.values(resumenPrecios)
+    .reduce((acc, item) => acc + item.total, 0);
+
   return (
-    <div className="text-gray-200">
+    <div className="text-gray-200 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
       <h1 className="text-xl md:text-2xl font-bold text-yellow-400 mb-6">
         Entradas Vendidas 🎟️
@@ -207,6 +233,31 @@ export default function AdminEntradas() {
             ))}
 
           </div>
+
+          {/* 💸 RESUMEN POR PRECIO */}
+          {eventoSeleccionado !== "todos" && (
+            <div className="mt-6">
+
+              <h3 className="text-yellow-400 font-bold mb-2">
+                💸 Ventas por precio
+              </h3>
+
+              {Object.entries(resumenPrecios)
+                .sort((a, b) => Number(a[0]) - Number(b[0]))
+                .map(([precio, data]) => (
+                  <p key={precio} className="text-sm text-gray-300">
+                    ${Number(precio).toLocaleString("es-AR")} → {data.cantidad} entradas | 💰 $
+                    {data.total.toLocaleString("es-AR")}
+                  </p>
+                ))}
+
+              <p className="mt-3 text-lg font-bold text-green-400">
+                TOTAL: ${totalGeneral.toLocaleString("es-AR")}
+              </p>
+
+            </div>
+          )}
+
         </div>
       )}
 
@@ -222,7 +273,7 @@ export default function AdminEntradas() {
           onChange={(e) => setEventoSeleccionado(e.target.value)}
           className="bg-gray-900 border border-gray-700 p-3 rounded w-full text-gray-200"
         >
-          <option value="todos">Todos los eventos</option>
+          <option value="todos">Seleccionar evento</option>
 
           {eventos.map((ev) => (
             <option key={ev.id} value={ev.id}>
@@ -234,21 +285,60 @@ export default function AdminEntradas() {
       </div>
 
       {/* BUSCADOR */}
-      <div className="mb-6">
+      {eventoSeleccionado !== "todos" && (
+        <div className="mb-6">
 
-        <input
-          type="text"
-          placeholder="Buscar por nombre del comprador..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="w-full bg-gray-900 border border-gray-700 p-3 rounded text-gray-200"
-        />
+          <input
+            type="text"
+            placeholder="Buscar por nombre del comprador..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 p-3 rounded text-gray-200"
+          />
 
-      </div>
+        </div>
+      )}
 
-      <ExportButtons entradas={entradasFiltradas} eventos={eventos} />
+      {/* MENSAJE VACÍO */}
+      {eventoSeleccionado === "todos" && (
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 text-center text-gray-400">
+          Seleccioná un evento para ver las entradas vendidas 🎟️
+        </div>
+      )}
 
-      <EntradasTable entradas={entradasFiltradas} eventos={eventos} />
+      {/* TABLA */}
+      {eventoSeleccionado !== "todos" && (
+        <>
+          <ExportButtons entradas={entradasFiltradas} eventos={eventos} />
+
+          <EntradasTable
+            entradas={entradasFiltradas}
+            eventos={eventos}
+          />
+        </>
+      )}
+
+      {/* INVITADOS */}
+      {eventoSeleccionado !== "todos" && (
+        <div className="mt-6">
+          <button
+            onClick={() => setMostrarInvitados(!mostrarInvitados)}
+            className="text-xs text-gray-400 hover:text-gray-300 underline underline-offset-2"
+          >
+            {mostrarInvitados ? "Ocultar lista de invitados" : "Ver lista de invitados"}
+          </button>
+
+          {mostrarInvitados && (
+            <div className="bg-gray-900 rounded-xl border border-gray-700 p-6 mt-3">
+              <h2 className="text-yellow-400 font-bold text-lg mb-4">
+                Lista de Invitados 🧾
+              </h2>
+
+              <InvitadosEvento eventoId={Number(eventoSeleccionado)} />
+            </div>
+          )}
+        </div>
+      )}
 
     </div>
   );

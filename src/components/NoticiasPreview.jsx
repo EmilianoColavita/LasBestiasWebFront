@@ -2,13 +2,18 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getNoticias } from "../services/noticias";
 
-function Noticias() {
+function NoticiasPreview() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getNoticias().then((data) => {
-      setNoticias(data);
+      const ordenadas = [...data].sort(
+        (a, b) =>
+          new Date(b.fechaPublicacion) - new Date(a.fechaPublicacion)
+      );
+
+      setNoticias(ordenadas.slice(0, 4)); // SOLO 4
       setLoading(false);
     });
   }, []);
@@ -20,7 +25,11 @@ function Noticias() {
   };
 
   if (loading) {
-    return <p className="text-center text-gray-400">Cargando noticias...</p>;
+    return (
+      <p className="text-center text-gray-400">
+        Cargando noticias...
+      </p>
+    );
   }
 
   return (
@@ -36,14 +45,13 @@ function Noticias() {
           Noticias
         </h2>
 
-        <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {noticias.map((noticia) => (
             <div
               key={noticia.id}
-              className="min-w-[280px] sm:min-w-[300px] md:min-w-[320px] max-w-[320px]
-                         bg-gray-900/90 rounded-xl shadow-lg p-4
+              className="bg-gray-900/90 rounded-xl shadow-lg p-4
                          hover:scale-105 transform transition duration-300
-                         flex flex-col snap-start"
+                         flex flex-col"
             >
               <img
                 src={noticia.imagenUrl}
@@ -79,9 +87,19 @@ function Noticias() {
             </div>
           ))}
         </div>
+
+        {/* BOTÓN VER TODAS */}
+        <div className="flex justify-center mt-10">
+          <Link
+            to="/noticias"
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition"
+          >
+            Ver todas las noticias
+          </Link>
+        </div>
       </div>
     </section>
   );
 }
 
-export default Noticias;
+export default NoticiasPreview;

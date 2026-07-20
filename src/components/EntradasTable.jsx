@@ -35,6 +35,7 @@ export default function EntradasTable({ entradas, eventos }) {
               <th className="py-3 px-4">Estado</th>
               <th className="py-3 px-4">Hora ingreso</th>
               <th className="py-3 px-4">Fecha compra</th>
+              <th className="py-3 px-4">Monto pagado</th>
             </tr>
           </thead>
 
@@ -66,6 +67,10 @@ export default function EntradasTable({ entradas, eventos }) {
 
                 <td className="py-3 px-4">
                   {new Date(e.fechaCompra).toLocaleString("es-AR")}
+                </td>
+
+                <td className="py-3 px-4 text-green-400 font-semibold">
+                  ${Number(e.precioPagado || 0).toLocaleString("es-AR")}
                 </td>
 
               </tr>
@@ -106,6 +111,10 @@ export default function EntradasTable({ entradas, eventos }) {
 
             <p className="text-gray-500 text-xs mt-2">
               Compra: {new Date(e.fechaCompra).toLocaleString("es-AR")}
+            </p>
+
+            <p className="text-green-400 text-sm font-semibold mt-1">
+              💰 ${Number(e.precioPagado || 0).toLocaleString("es-AR")}
             </p>
 
           </div>

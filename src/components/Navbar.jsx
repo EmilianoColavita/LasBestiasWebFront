@@ -1,12 +1,12 @@
-import { FaInstagram, FaYoutube, FaSpotify, FaBars, FaTimes } from "react-icons/fa";
+import { FaInstagram, FaYoutube, FaSpotify, FaTiktok, FaBars, FaTimes } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { isAuthenticated, clearSession } from "../utils/auth";
 
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const isLoggedIn = !!token;
+  const isLoggedIn = isAuthenticated();
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -16,7 +16,7 @@ function Navbar() {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearSession();
     window.location.href = "/";
   };
 
@@ -69,7 +69,7 @@ function Navbar() {
           </button>
 
           <button
-            onClick={() => handleNavClick("noticias")}
+            onClick={() => handleNavigate("/noticias")}
             className="hover:text-red-500 transition duration-300 drop-shadow-sm text-left md:text-center py-1"
           >
             NOTICIAS
@@ -162,6 +162,16 @@ function Navbar() {
           aria-label="Spotify"
         >
           <FaSpotify size={24} />
+        </a>
+
+        <a
+          href="https://www.tiktok.com/@lasbestiasok"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-red-500 transition duration-300"
+          aria-label="TikTok"
+        >
+          <FaTiktok size={24} />
         </a>
 
         {/* ADMIN DESKTOP */}

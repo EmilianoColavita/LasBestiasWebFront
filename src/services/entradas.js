@@ -1,15 +1,11 @@
+import { authFetch } from "../api/authFetch";
+
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const API_URL = `${BASE_URL}/api/entradas`;
 
 export async function getEntradas() {
   try {
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(API_URL, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await authFetch(API_URL);
 
     if (!response.ok) {
       throw new Error("Error al obtener entradas");

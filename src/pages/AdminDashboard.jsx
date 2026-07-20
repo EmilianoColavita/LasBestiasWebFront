@@ -8,13 +8,14 @@ import {
   X,
   CalendarDays,
 } from "lucide-react";
+import { clearSession } from "../utils/auth";
 
 export default function AdminDashboard() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    clearSession();
     window.location.href = "/login";
   };
 

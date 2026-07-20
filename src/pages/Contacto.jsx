@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaInstagram, FaYoutube, FaSpotify, FaEnvelope } from "react-icons/fa";
+import { FaInstagram, FaYoutube, FaSpotify, FaTiktok, FaEnvelope } from "react-icons/fa";
 
 export default function Contacto() {
 
@@ -103,6 +103,15 @@ export default function Contacto() {
             className="text-white hover:text-red-500 transition transform hover:scale-110"
           >
             <FaSpotify />
+          </a>
+
+          <a
+            href="https://www.tiktok.com/@lasbestiasok"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-red-500 transition transform hover:scale-110"
+          >
+            <FaTiktok />
           </a>
 
         </div>

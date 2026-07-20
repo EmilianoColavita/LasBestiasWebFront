@@ -56,29 +56,31 @@ function AdminNoticias() {
   return (
     <div className="min-h-screen bg-black text-gray-200">
       {/* Header */}
-      <header className="bg-gray-900 border-b border-gray-700 p-6 flex justify-between items-center shadow-lg">
-        <div>
-          <h1 className="text-2xl font-bold text-yellow-400">
-            Panel de Administración - Noticias 📰
-          </h1>
-          <p className="text-sm text-gray-400">Bienvenido, Administrador 👋</p>
+      <header className="bg-gray-900 border-b border-gray-700 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-yellow-400">
+              Panel de Administración - Noticias 📰
+            </h1>
+            <p className="text-sm text-gray-400">Bienvenido, Administrador 👋</p>
+          </div>
+          <button
+            onClick={() => {
+              setEditando(null);
+              setTitulo("");
+              setDescripcion("");
+              setImagen(null);
+              setShowForm(true);
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow"
+          >
+            + Agregar Noticia
+          </button>
         </div>
-        <button
-          onClick={() => {
-            setEditando(null);
-            setTitulo("");
-            setDescripcion("");
-            setImagen(null);
-            setShowForm(true);
-          }}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow"
-        >
-          + Agregar Noticia
-        </button>
       </header>
 
       {/* Tabla de noticias */}
-      <main className="p-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-gray-900 rounded-xl shadow-lg border border-gray-700 overflow-x-auto">
 
           <table className="min-w-full text-sm text-gray-300">

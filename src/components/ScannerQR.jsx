@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
+import { authFetch } from "../api/authFetch";
 
 export default function ScannerQR({ onValidacionExitosa }) {
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -38,13 +39,10 @@ export default function ScannerQR({ onValidacionExitosa }) {
         qrValue = qrValue.split("/").pop();
       }
 
-      const tokenJwt = localStorage.getItem("token");
-
-      const response = await fetch(`${BASE_URL}/api/entradas/validar`, {
+      const response = await authFetch(`${BASE_URL}/api/entradas/validar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenJwt}`,
         },
         body: JSON.stringify({ token: qrValue }),
       });

@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import Noticias from "./components/Noticias";
+import NoticiasPage from "./pages/NoticiasPage";
+import NoticiasPreview from "./components/NoticiasPreview";
 import NoticiaDetalle from "./components/NoticiaDetalle";
 import Videos from "./components/Videos";
 import Footer from "./components/Footer";
@@ -36,7 +37,7 @@ function App() {
             element={
               <>
                 <Hero />
-                <Noticias />
+                <NoticiasPreview />
                 <Musica />
                 <Videos />
               </>
@@ -50,6 +51,7 @@ function App() {
           <Route path="/pago-exitoso" element={<PagoExitoso />} />
           <Route path="/pago-error" element={<PagoError />} />
           <Route path="/pago-pendiente" element={<PagoPendiente />} />
+          <Route path="/noticias" element={<NoticiasPage />} />
 
 
           {/* 🛡️ Rutas de administración (protegidas) */}
@@ -58,6 +60,7 @@ function App() {
             <Route path="noticias" element={<AdminNoticias />} />
             <Route path="/admin/eventos" element={<AdminEventos />} />
             <Route path="entradas" element={<AdminEntradas />} />
+            
 
             {/* futuras secciones */}
             {/* <Route path="musica" element={<AdminMusica />} /> */}
