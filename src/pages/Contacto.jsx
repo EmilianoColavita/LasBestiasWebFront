@@ -1,8 +1,13 @@
 import { useState } from "react";
-import { FaInstagram, FaYoutube, FaSpotify, FaTiktok, FaEnvelope } from "react-icons/fa";
+import { FaEnvelope } from "react-icons/fa";
+import { SOCIAL_LINKS } from "../constants/social";
+import Reveal from "../components/ui/Reveal";
+import ArrowIcon from "../components/ui/ArrowIcon";
+
+const inputCls =
+  "w-full rounded-xl border border-white/10 bg-black/50 px-4 py-3.5 text-white placeholder-white/35 transition-colors focus:border-bestia focus:outline-none focus:ring-1 focus:ring-bestia sm:px-5 sm:py-4";
 
 export default function Contacto() {
-
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [mensaje, setMensaje] = useState("");
@@ -19,13 +24,13 @@ export default function Contacto() {
       await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/contacto`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           nombre,
           email,
-          mensaje
-        })
+          mensaje,
+        }),
       });
 
       alert("Mensaje enviado 🐺");
@@ -33,7 +38,6 @@ export default function Contacto() {
       setNombre("");
       setEmail("");
       setMensaje("");
-
     } catch (error) {
       alert("Error enviando mensaje");
     } finally {
@@ -42,133 +46,134 @@ export default function Contacto() {
   };
 
   return (
-    <div
-      className="relative min-h-screen flex flex-col items-center text-center text-white bg-cover bg-center pt-24 sm:pt-28 md:pt-32 pb-16 px-4"
+    <section
+      className="grain relative min-h-[calc(100svh-72px)] overflow-hidden bg-black bg-cover bg-center md:min-h-[calc(100svh-80px)]"
       style={{ backgroundImage: "url('/images/fondo7.png')" }}
     >
+      {/* Overlay oscuro sobre el fondo original */}
+      <div className="absolute inset-0 bg-black/80" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-night-950/60 via-transparent to-black/80"
+        aria-hidden="true"
+      />
 
-      {/* Overlay oscuro */}
-      <div className="absolute inset-0 bg-black bg-opacity-80"></div>
+      <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 md:py-24 lg:grid-cols-12 lg:gap-16">
+        {/* Info */}
+        <Reveal className="lg:col-span-5">
+          <span className="eyebrow mb-4">Las Bestias</span>
+          <h1 className="section-title">Contacto</h1>
 
-      {/* Contenido */}
-      <div className="relative z-10 max-w-3xl w-full space-y-8 sm:space-y-10">
+          <p className="mt-6 max-w-md text-base leading-relaxed text-white/70 md:text-lg">
+            Si querés comunicarte con{" "}
+            <span className="font-bold text-white">Las Bestias</span>, podés escribirnos o
+            seguirnos en nuestras redes sociales.
+          </p>
 
-        {/* Título */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-yellow-400 tracking-widest">
-          CONTACTO
-        </h1>
-
-        <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
-          Si querés comunicarte con{" "}
-          <span className="text-red-500 font-bold">LAS BESTIAS</span>, podés
-          escribirnos o seguirnos en nuestras redes sociales.
-        </p>
-
-        {/* Email */}
-        <div className="flex flex-col items-center gap-2 mt-4">
-          <FaEnvelope className="text-red-500 text-2xl sm:text-3xl" />
+          {/* Email */}
           <a
             href="mailto:lasbestiasok@gmail.com"
-            className="text-yellow-400 text-base sm:text-lg font-semibold hover:text-yellow-300 transition"
+            className="surface-card group mt-10 flex items-center gap-4 p-5 hover:border-bestia/40 hover:shadow-glow"
           >
-            lasbestiasok@gmail.com
-          </a>
-        </div>
-
-        {/* Redes */}
-        <div className="flex justify-center gap-8 sm:gap-10 mt-8 text-3xl sm:text-4xl">
-
-          <a
-            href="https://www.instagram.com/lasbestiasok/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white hover:text-red-500 transition transform hover:scale-110"
-          >
-            <FaInstagram />
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-bestia text-black">
+              <FaEnvelope size={18} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[11px] font-semibold uppercase tracking-widest text-white/50">
+                Email
+              </span>
+              <span className="block truncate font-semibold text-white transition-colors group-hover:text-bestia">
+                lasbestiasok@gmail.com
+              </span>
+            </span>
           </a>
 
-          <a
-            href="https://www.youtube.com/@lasbestias7520"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white hover:text-red-500 transition transform hover:scale-110"
-          >
-            <FaYoutube />
-          </a>
-
-          <a
-            href="https://open.spotify.com/intl-es/artist/5zNZD3CVAzkt15PqCavTZZ"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white hover:text-red-500 transition transform hover:scale-110"
-          >
-            <FaSpotify />
-          </a>
-
-          <a
-            href="https://www.tiktok.com/@lasbestiasok"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white hover:text-red-500 transition transform hover:scale-110"
-          >
-            <FaTiktok />
-          </a>
-
-        </div>
-
-        {/* Separación grande */}
-        <h2 className="text-xl sm:text-2xl text-yellow-400 font-bold mt-16 sm:mt-20">
-          Escribinos directamente
-        </h2>
+          {/* Redes */}
+          <div className="mt-10">
+            <span className="mb-4 block text-[11px] font-semibold uppercase tracking-widest text-white/50">
+              Seguinos
+            </span>
+            <div className="flex gap-3">
+              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="grid h-12 w-12 place-items-center rounded-full border border-white/15 text-white transition-all duration-300 hover:-translate-y-0.5 hover:border-bestia hover:text-bestia"
+                >
+                  <Icon size={20} />
+                </a>
+              ))}
+            </div>
+          </div>
+        </Reveal>
 
         {/* Formulario */}
-        <form
-          onSubmit={enviarMensaje}
-          className="flex flex-col gap-4 mt-6"
-        >
+        <Reveal delay={0.1} className="lg:col-span-7">
+          <div className="surface-card p-6 sm:p-8 md:p-10">
+            <h2 className="font-display text-3xl tracking-wide text-white md:text-4xl">
+              Escribinos directamente
+            </h2>
+            <span className="mt-3 block h-1 w-12 bg-bestia" aria-hidden="true" />
 
-          <input
-            type="text"
-            placeholder="Tu nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            required
-            className="p-3 sm:p-4 rounded bg-black bg-opacity-50 border border-gray-600 text-white focus:border-red-500 focus:outline-none"
-          />
+            <form onSubmit={enviarMensaje} className="mt-8 flex flex-col gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className="sr-only">Tu nombre</span>
+                  <input
+                    type="text"
+                    placeholder="Tu nombre"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    required
+                    className={inputCls}
+                  />
+                </label>
 
-          <input
-            type="email"
-            placeholder="Tu email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="p-3 sm:p-4 rounded bg-black bg-opacity-50 border border-gray-600 text-white focus:border-red-500 focus:outline-none"
-          />
+                <label className="block">
+                  <span className="sr-only">Tu email</span>
+                  <input
+                    type="email"
+                    placeholder="Tu email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className={inputCls}
+                  />
+                </label>
+              </div>
 
-          <textarea
-            placeholder="Escribí tu mensaje..."
-            value={mensaje}
-            onChange={(e) => setMensaje(e.target.value)}
-            rows="5"
-            required
-            className="p-3 sm:p-4 rounded bg-black bg-opacity-50 border border-gray-600 text-white focus:border-red-500 focus:outline-none"
-          />
+              <label className="block">
+                <span className="sr-only">Mensaje</span>
+                <textarea
+                  placeholder="Escribí tu mensaje..."
+                  value={mensaje}
+                  onChange={(e) => setMensaje(e.target.value)}
+                  rows="6"
+                  required
+                  className={`${inputCls} resize-y`}
+                />
+              </label>
 
-          <button
-            type="submit"
-            disabled={enviando}
-            className="bg-red-600 hover:bg-red-700 transition p-3 sm:p-4 rounded font-bold disabled:opacity-50"
-          >
-            {enviando ? "Enviando..." : "Enviar mensaje"}
-          </button>
+              <button
+                type="submit"
+                disabled={enviando}
+                className="btn-primary group mt-2 w-full py-4 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:self-start"
+              >
+                {enviando ? "Enviando..." : "Enviar mensaje"}
+                {!enviando && (
+                  <ArrowIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                )}
+              </button>
+            </form>
+          </div>
 
-        </form>
-
-        <p className="text-xs sm:text-sm text-gray-500 mt-10 italic">
-          ¡Gracias por ser parte de la comunidad bestial!
-        </p>
-
+          <p className="mt-6 text-center text-xs italic text-white/40 lg:text-left">
+            ¡Gracias por ser parte de la comunidad bestial!
+          </p>
+        </Reveal>
       </div>
-    </div>
+    </section>
   );
 }

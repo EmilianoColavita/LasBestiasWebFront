@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ReleaseCard from "./ReleaseCard";
+import SectionHeader from "./ui/SectionHeader";
+import Reveal from "./ui/Reveal";
+import ArrowIcon from "./ui/ArrowIcon";
+
+const CANTIDAD = 3;
 
 function Musica() {
   const [tracks, setTracks] = useState([]);
@@ -12,7 +18,7 @@ function Musica() {
       try {
         const response = await fetch(`${BASE_URL}/api/musica`);
         const data = await response.json();
-        setTracks(data);
+        setTracks(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error al obtener música:", error);
       } finally {
@@ -23,106 +29,61 @@ function Musica() {
     fetchTracks();
   }, [BASE_URL]);
 
-  if (loading) {
-    return (
-      <section id="musica" className="py-20 bg-black text-center text-gray-400">
-        Cargando música...
-      </section>
-    );
-  }
-
-  if (!tracks.length) {
-    return (
-      <section id="musica" className="py-20 bg-black text-center text-red-500">
-        No hay canciones disponibles por el momento.
-      </section>
-    );
-  }
-
-  const limitedTracks = tracks.slice(0, 3); // 👈 SOLO 3 como antes
+  const limitedTracks = tracks.slice(0, CANTIDAD);
 
   return (
-    <section
-      id="musica"
-      className="
-        relative
-        py-20
-        px-6 md:px-8
-        bg-black
-        bg-no-repeat
-        bg-cover
-        bg-[center_top]
-        md:bg-center
-        min-h-screen
-      "
-      style={{
-        backgroundImage: "url('/images/fondo-microfono.jpeg')",
-      }}
-    >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60"></div>
+    <section id="musica" className="grain relative overflow-hidden bg-night-950 py-20 md:py-28">
+      {/* Fotografía original de fondo */}
+      <div
+        className="absolute inset-0 bg-cover bg-[center_top] opacity-30 md:bg-center"
+        style={{ backgroundImage: "url('/images/fondo-microfono.jpeg')" }}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-black via-night-950/85 to-black"
+        aria-hidden="true"
+      />
 
-      <div className="relative max-w-6xl mx-auto text-center">
-        <h2 className="text-4xl font-extrabold text-green-400 mb-10">
-          Música
-        </h2>
+      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8">
+        <SectionHeader
+          eyebrow="Lanzamientos"
+          title="Música"
+          action={
+            <Link to="/musica" className="btn-outline group">
+              Ver toda la música
+              <ArrowIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          }
+        />
 
-        {/* 🔥 Scroll horizontal SOLO en mobile */}
-        <div className="flex md:grid md:grid-cols-3 gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4">
-          {limitedTracks.map((track) => (
-            <div
-              key={track.id}
-              className="min-w-[280px] md:min-w-0 bg-gray-900 rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:scale-105 hover:shadow-green-500/20 snap-start"
-            >
-              {track.imagenUrl && (
-                <img
-                  src={track.imagenUrl}
-                  alt={track.titulo}
-                  className="w-full h-56 object-cover"
-                />
-              )}
-
-              <div className="p-4">
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {track.titulo}
-                </h3>
-
-                {track.spotifyId && (
-                  <iframe
-                    src={`https://open.spotify.com/embed/track/${track.spotifyId}`}
-                    width="100%"
-                    height="80"
-                    frameBorder="0"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    className="rounded-lg mb-3"
-                    title={track.titulo}
-                  ></iframe>
-                )}
-
-                {track.urlSpotify && (
-                  <a
-                    href={track.urlSpotify}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-2 text-sm text-green-400 hover:text-green-300"
-                  >
-                    Escuchar en Spotify →
-                  </a>
-                )}
+        {loading ? (
+          <div className="-mx-5 flex gap-6 overflow-x-hidden px-5 md:mx-0 md:grid md:grid-cols-3 md:px-0">
+            {Array.from({ length: CANTIDAD }).map((_, i) => (
+              <div key={i} className="surface-card min-w-[78%] overflow-hidden sm:min-w-[45%] md:min-w-0">
+                <div className="skeleton aspect-square rounded-none" />
+                <div className="space-y-3 p-5">
+                  <div className="skeleton h-6 w-2/3" />
+                  <div className="skeleton h-20 w-full rounded-xl" />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-10">
-          <Link
-            to="/musica"
-            className="px-6 py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition"
-          >
-            Ver toda la música
-          </Link>
-        </div>
+            ))}
+          </div>
+        ) : !tracks.length ? (
+          <p className="text-center text-white/50">No hay canciones disponibles por el momento.</p>
+        ) : (
+          /* Scroll horizontal con snap en mobile, grilla en desktop */
+          <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 md:mx-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0">
+            {limitedTracks.map((track, i) => (
+              <Reveal
+                key={track.id}
+                delay={i * 0.1}
+                className="min-w-[78%] snap-start sm:min-w-[45%] md:min-w-0"
+              >
+                <ReleaseCard track={track} />
+              </Reveal>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

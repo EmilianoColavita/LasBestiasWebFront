@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ReleaseCard from "../components/ReleaseCard";
+import SectionHeader from "../components/ui/SectionHeader";
+import Reveal from "../components/ui/Reveal";
 
 function MusicaCompleta() {
   const [albums, setAlbums] = useState({});
@@ -14,7 +17,7 @@ function MusicaCompleta() {
         const data = await response.json();
 
         // Agrupar canciones por tipo o álbum
-        const grouped = data.reduce((acc, track) => {
+        const grouped = (Array.isArray(data) ? data : []).reduce((acc, track) => {
           if (!acc[track.tipo]) acc[track.tipo] = [];
           acc[track.tipo].push(track);
           return acc;
@@ -31,89 +34,65 @@ function MusicaCompleta() {
     fetchTracks();
   }, [BASE_URL]);
 
-  if (loading) {
-    return (
-      <section className="py-20 bg-black text-center text-gray-400">
-        Cargando música...
-      </section>
-    );
-  }
+  const grupos = Object.entries(albums);
 
   return (
-    <section
-      className="relative py-24 px-8 bg-black bg-cover bg-center bg-no-repeat bg-fixed"
-      style={{
-        backgroundImage: "url('/images/fondo5.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Overlay oscuro para mejorar la legibilidad */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+    <section className="grain relative min-h-screen overflow-hidden bg-black py-16 md:py-24">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-20"
+        style={{ backgroundImage: "url('/images/fondo5.jpg')" }}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-night-950/80 via-black/95 to-black"
+        aria-hidden="true"
+      />
 
-      {/* Contenido principal */}
-      <div className="relative max-w-6xl mx-auto z-10">
-        <h2 className="text-5xl font-extrabold text-green-400 mb-12 text-center">
-          Discografía completa
-        </h2>
+      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8">
+        <SectionHeader eyebrow="Música" title="Discografía completa" as="h1" />
 
-        {Object.entries(albums).map(([albumName, tracks]) => (
-          <div key={albumName} className="mb-16">
-            <h3 className="text-2xl font-bold text-white mb-6 border-b border-green-500 pb-2">
-              {albumName}
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {tracks.map((track) => (
-                <div
-                  key={track.id}
-                  className="bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden transition-transform transform hover:scale-105 hover:shadow-green-500/20"
-                >
-                  {track.imagenUrl && (
-                    <img
-                      src={track.imagenUrl}
-                      alt={track.titulo}
-                      className="w-full aspect-square object-cover"
-                    />
-                  )}
-                  <div className="p-4">
-                    <h4 className="text-lg font-semibold text-white mb-2">
-                      {track.titulo}
-                    </h4>
-                    {track.spotifyId && (
-                      <iframe
-                        src={`https://open.spotify.com/embed/track/${track.spotifyId}`}
-                        width="100%"
-                        height="80"
-                        frameBorder="0"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        loading="lazy"
-                        className="rounded-lg mb-3"
-                        title={track.titulo}
-                      ></iframe>
-                    )}
-                    {track.urlSpotify && (
-                      <a
-                        href={track.urlSpotify}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-green-400 hover:text-green-300"
-                      >
-                        Escuchar en Spotify →
-                      </a>
-                    )}
-                  </div>
+        {loading && (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="surface-card overflow-hidden">
+                <div className="skeleton aspect-square rounded-none" />
+                <div className="space-y-3 p-5">
+                  <div className="skeleton h-6 w-2/3" />
+                  <div className="skeleton h-20 w-full rounded-xl" />
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && grupos.length === 0 && (
+          <p className="text-center text-white/50">No hay canciones disponibles por el momento.</p>
+        )}
+
+        {grupos.map(([albumName, tracks]) => (
+          <div key={albumName} className="mb-16 md:mb-20">
+            <Reveal className="mb-8 flex items-center gap-5">
+              <h2 className="font-display text-3xl tracking-wide text-white md:text-4xl">
+                {albumName}
+              </h2>
+              <span className="h-px flex-1 bg-gradient-to-r from-bestia/60 to-transparent" />
+              <span className="text-xs font-semibold uppercase tracking-widest text-white/40">
+                {tracks.length} {tracks.length === 1 ? "tema" : "temas"}
+              </span>
+            </Reveal>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {tracks.map((track, i) => (
+                <Reveal key={track.id} delay={(i % 4) * 0.06} className="h-full">
+                  <ReleaseCard track={track} showTipo={false} />
+                </Reveal>
               ))}
             </div>
           </div>
         ))}
 
-        <div className="text-center mt-12">
-          <Link
-            to="/"
-            className="px-6 py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition"
-          >
+        <div className="mt-4 text-center">
+          <Link to="/" className="btn-outline">
             ← Volver al inicio
           </Link>
         </div>

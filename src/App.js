@@ -20,14 +20,16 @@ import Contacto from "./pages/Contacto";
 import PagoExitoso from "./pages/PagoExitoso";
 import PagoError from "./pages/PagoError";
 import PagoPendiente from "./pages/PagoPendiente";
+import { MotionConfig } from "framer-motion";
 
 
 
 function App() {
   return (
+    <MotionConfig reducedMotion="user">
     <Router>
       <ScrollToHashElement />
-      <div className="bg-black text-white">
+      <div className="min-h-screen bg-black text-white">
         <Navbar />
 
         <Routes>
@@ -71,6 +73,7 @@ function App() {
         <Footer />
       </div>
     </Router>
+    </MotionConfig>
   );
 }
 
