@@ -1,78 +1,54 @@
-export default function EntradasTable({ entradas, eventos }) {
+import { Badge, formatMoney } from "./admin/AdminUI";
 
+export default function EntradasTable({ entradas, eventos }) {
   const getEventoNombre = (id) => {
     const ev = eventos.find((e) => e.id === id);
     return ev ? ev.nombre : "Desconocido";
   };
 
-  const estadoEntrada = (entrada) => {
-    if (entrada.usada) {
-      return (
-        <span className="bg-green-600 text-white px-2 py-1 rounded text-xs">
-          Escaneada
-        </span>
-      );
-    }
+  const estadoEntrada = (entrada) =>
+    entrada.usada ? <Badge tone="green">Escaneada</Badge> : <Badge tone="red">Pendiente</Badge>;
 
+  if (entradas.length === 0) {
     return (
-      <span className="bg-red-600 text-white px-2 py-1 rounded text-xs">
-        Pendiente
-      </span>
+      <div className="surface-card px-6 py-10 text-center text-sm text-white/40">
+        No hay entradas para mostrar.
+      </div>
     );
-  };
+  }
 
   return (
     <div>
-
       {/* DESKTOP TABLE */}
-      <div className="hidden md:block bg-gray-900 p-6 rounded-xl border border-gray-700 overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-800 text-yellow-400">
-            <tr>
-              <th className="py-3 px-4">Evento</th>
-              <th className="py-3 px-4">Nombre</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Estado</th>
-              <th className="py-3 px-4">Hora ingreso</th>
-              <th className="py-3 px-4">Fecha compra</th>
-              <th className="py-3 px-4">Monto pagado</th>
+      <div className="surface-card hidden overflow-x-auto md:block">
+        <table className="min-w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-white/10 text-[11px] uppercase tracking-widest text-white/50">
+              <th className="px-5 py-4 font-semibold">Evento</th>
+              <th className="px-5 py-4 font-semibold">Nombre</th>
+              <th className="px-5 py-4 font-semibold">Email</th>
+              <th className="px-5 py-4 font-semibold">Estado</th>
+              <th className="px-5 py-4 font-semibold">Hora ingreso</th>
+              <th className="px-5 py-4 font-semibold">Fecha compra</th>
+              <th className="px-5 py-4 text-right font-semibold">Monto pagado</th>
             </tr>
           </thead>
-
-          <tbody>
+          <tbody className="divide-y divide-white/[0.06]">
             {entradas.map((e) => (
-              <tr key={e.id} className="border-t border-gray-700">
-
-                <td className="py-3 px-4">
-                  {getEventoNombre(e.eventoId)}
+              <tr key={e.id} className="transition-colors hover:bg-white/[0.03]">
+                <td className="px-5 py-3.5 text-white/60">{getEventoNombre(e.eventoId)}</td>
+                <td className="px-5 py-3.5 font-semibold text-white">{e.nombreComprador}</td>
+                <td className="px-5 py-3.5 text-white/60">{e.email}</td>
+                <td className="px-5 py-3.5">{estadoEntrada(e)}</td>
+                <td className="px-5 py-3.5 text-white/60">
+                  {e.fechaUso ? new Date(e.fechaUso).toLocaleTimeString("es-AR") : "-"}
                 </td>
-
-                <td className="py-3 px-4">
-                  {e.nombreComprador}
-                </td>
-
-                <td className="py-3 px-4">
-                  {e.email}
-                </td>
-
-                <td className="py-3 px-4">
-                  {estadoEntrada(e)}
-                </td>
-
-                <td className="py-3 px-4">
-                  {e.fechaUso
-                    ? new Date(e.fechaUso).toLocaleTimeString("es-AR")
-                    : "-"}
-                </td>
-
-                <td className="py-3 px-4">
+                <td className="px-5 py-3.5 text-white/60">
                   {new Date(e.fechaCompra).toLocaleString("es-AR")}
                 </td>
-
-                <td className="py-3 px-4 text-green-400 font-semibold">
-                  ${Number(e.precioPagado || 0).toLocaleString("es-AR")}
+                <td className="px-5 py-3.5 text-right font-semibold text-white">
+                  {formatMoney(e.precioPagado)}
                 </td>
-
               </tr>
             ))}
           </tbody>
@@ -80,47 +56,34 @@ export default function EntradasTable({ entradas, eventos }) {
       </div>
 
       {/* MOBILE CARDS */}
-      <div className="md:hidden space-y-4">
+      <div className="space-y-3 md:hidden">
         {entradas.map((e) => (
-          <div
-            key={e.id}
-            className="bg-gray-900 border border-gray-700 p-4 rounded-xl"
-          >
-
-            <p className="text-yellow-400 font-semibold">
-              {getEventoNombre(e.eventoId)}
-            </p>
-
-            <p className="text-white font-bold text-lg">
-              {e.nombreComprador}
-            </p>
-
-            <p className="text-gray-400 text-sm">
-              {e.email}
-            </p>
-
-            <div className="mt-2">
+          <div key={e.id} className="surface-card p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-semibold uppercase tracking-widest text-bestia">
+                  {getEventoNombre(e.eventoId)}
+                </p>
+                <p className="mt-1 truncate text-lg font-bold text-white">{e.nombreComprador}</p>
+                <p className="truncate text-sm text-white/50">{e.email}</p>
+              </div>
               {estadoEntrada(e)}
             </div>
 
-            {e.fechaUso && (
-              <p className="text-green-400 text-xs mt-1">
-                Ingresó: {new Date(e.fechaUso).toLocaleTimeString("es-AR")}
-              </p>
-            )}
-
-            <p className="text-gray-500 text-xs mt-2">
-              Compra: {new Date(e.fechaCompra).toLocaleString("es-AR")}
-            </p>
-
-            <p className="text-green-400 text-sm font-semibold mt-1">
-              💰 ${Number(e.precioPagado || 0).toLocaleString("es-AR")}
-            </p>
-
+            <div className="mt-3 flex items-end justify-between gap-3 border-t border-white/[0.06] pt-3 text-xs text-white/40">
+              <div>
+                <p>Compra: {new Date(e.fechaCompra).toLocaleString("es-AR")}</p>
+                {e.fechaUso && (
+                  <p className="text-emerald-400">
+                    Ingresó: {new Date(e.fechaUso).toLocaleTimeString("es-AR")}
+                  </p>
+                )}
+              </div>
+              <p className="font-display text-xl tracking-wide text-white">{formatMoney(e.precioPagado)}</p>
+            </div>
           </div>
         ))}
       </div>
-
     </div>
   );
 }

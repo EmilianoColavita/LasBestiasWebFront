@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import NoticiasPage from "./pages/NoticiasPage";
@@ -58,6 +58,7 @@ function App() {
 
           {/* 🛡️ Rutas de administración (protegidas) */}
           <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="noticias" element={<AdminNoticias />} />
             <Route path="/admin/eventos" element={<AdminEventos />} />

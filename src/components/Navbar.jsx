@@ -46,6 +46,9 @@ function Navbar() {
     };
   }, [menuOpen]);
 
+  // El panel de administración tiene su propia navegación
+  if (location.pathname.startsWith("/admin")) return null;
+
   const handleLogout = () => {
     clearSession();
     window.location.href = "/";
@@ -164,10 +167,10 @@ function Navbar() {
 
             {isLoggedIn && (
               <div className="ml-3 hidden items-center gap-3 border-l border-white/10 pl-4 lg:flex">
-                <span className="text-[11px] uppercase tracking-widest text-white/50">Admin</span>
+                <span className="hidden text-[11px] uppercase tracking-widest text-white/50 2xl:inline">Admin</span>
                 <button
                   onClick={handleLogout}
-                  className="rounded-full border border-red-500/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-red-400 transition hover:bg-red-600 hover:text-white"
+                  className="whitespace-nowrap rounded-full border border-red-500/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-red-400 transition hover:bg-red-600 hover:text-white"
                 >
                   Cerrar sesión
                 </button>

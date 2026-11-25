@@ -1,31 +1,88 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Plus, Pencil, Trash2, CalendarDays, MapPin, Clock } from "lucide-react";
 import {
   getEventos,
   crearEvento,
   actualizarEvento,
   eliminarEvento,
 } from "../services/eventos";
+import {
+  PageHeader,
+  Modal,
+  Field,
+  ImagePicker,
+  EmptyState,
+  Badge,
+  formatMoney,
+  formatFechaHora,
+} from "../components/admin/AdminUI";
+import {
+  MODOS_VENTA,
+  PLATAFORMAS_VENTA,
+  getModoVenta,
+  esUrlValida,
+  mensajeDeError,
+} from "../constants/venta";
+
+const FORM_VACIO = {
+  nombre: "",
+  descripcion: "",
+  lugar: "",
+  ciudad: "",
+  fechaEvento: "",
+  precio: "",
+  modoVenta: "MERCADO_PAGO",
+  plataformaVenta: "",
+  urlVenta: "",
+  notaVenta: "",
+  image: null,
+};
+
+// Etiqueta corta del modo de venta para las tarjetas del listado
+function VentaBadge({ evento }) {
+  const modo = getModoVenta(evento);
+  if (modo === "EXTERNO") {
+    const p = PLATAFORMAS_VENTA[evento.plataformaVenta] || PLATAFORMAS_VENTA.OTRA;
+    return (
+      <Badge tone="yellow">
+        <p.Icon size={11} /> {p.label}
+      </Badge>
+    );
+  }
+  if (modo === "SIN_VENTA_ONLINE") return <Badge>Sin venta online</Badge>;
+  return <Badge tone="green">Mercado Pago</Badge>;
+}
 
 function AdminEventos() {
   const [eventos, setEventos] = useState([]);
-  const [form, setForm] = useState({
-    nombre: "",
-    descripcion: "",
-    lugar: "",
-    ciudad: "",
-    fechaEvento: "",
-    precio: "",
-    image: null,
-  });
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState(FORM_VACIO);
+  const [imagenActual, setImagenActual] = useState(null);
   const [editando, setEditando] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [errorForm, setErrorForm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const cargarEventos = async () => {
     try {
       const data = await getEventos();
-      setEventos(data);
+      // Próximos primero (más cercano arriba), luego los pasados
+      const ahora = new Date();
+      const ordenados = [...data].sort((a, b) => {
+        const fa = new Date(a.fechaEvento);
+        const fb = new Date(b.fechaEvento);
+        const pa = fa < ahora;
+        const pb = fb < ahora;
+        if (pa !== pb) return pa ? 1 : -1;
+        return pa ? fb - fa : fa - fb;
+      });
+      setEventos(ordenados);
     } catch (error) {
       console.error("Error cargando eventos", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,21 +90,58 @@ function AdminEventos() {
     cargarEventos();
   }, []);
 
+  const abrirNuevo = () => {
+    setEditando(null);
+    setForm(FORM_VACIO);
+    setImagenActual(null);
+    setErrorForm("");
+    setShowForm(true);
+  };
+
+  // Acceso rápido desde el dashboard (?nuevo=1)
+  useEffect(() => {
+    if (searchParams.get("nuevo")) {
+      abrirNuevo();
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Mismas reglas que valida el backend, para avisar antes de enviar
+  const validar = () => {
+    const tienePrecio = form.precio !== "" && form.precio !== null;
+    const precioNumero = Number(form.precio);
+
+    if (form.modoVenta === "MERCADO_PAGO") {
+      if (!tienePrecio || isNaN(precioNumero) || precioNumero <= 0) {
+        return "Para vender por Mercado Pago, el precio debe ser un número mayor a 0.";
+      }
+    } else if (tienePrecio && (isNaN(precioNumero) || precioNumero < 0)) {
+      return "El precio no puede ser negativo.";
+    }
+
+    if (form.modoVenta === "EXTERNO") {
+      if (!form.plataformaVenta) return "Elegí la plataforma de venta.";
+      if (!esUrlValida(form.urlVenta)) {
+        return "El link de venta tiene que ser una URL completa (empieza con https://).";
+      }
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorForm("");
+
+    const error = validar();
+    if (error) {
+      setErrorForm(error);
+      return;
+    }
 
     try {
-      const precioNumero = Number(form.precio);
-
-      if (form.precio === "" || isNaN(precioNumero) || precioNumero <= 0) {
-        alert("El precio debe ser un número válido mayor a 0");
-        return;
-      }
-
       const fechaConSegundos =
-        form.fechaEvento.length === 16
-          ? form.fechaEvento + ":00"
-          : form.fechaEvento;
+        form.fechaEvento.length === 16 ? form.fechaEvento + ":00" : form.fechaEvento;
 
       const dataToSend = {
         nombre: form.nombre,
@@ -55,32 +149,31 @@ function AdminEventos() {
         lugar: form.lugar,
         ciudad: form.ciudad,
         fechaEvento: fechaConSegundos,
-        precio: precioNumero,
-        image: form.image, // 🔥 IMPORTANTE
+        precio: form.precio === "" || form.precio === null ? null : Number(form.precio),
+        modoVenta: form.modoVenta,
+        plataformaVenta: form.plataformaVenta,
+        urlVenta: form.urlVenta.trim(),
+        notaVenta: form.notaVenta,
+        image: form.image,
       };
 
+      setGuardando(true);
       if (editando) {
         await actualizarEvento(editando, dataToSend);
       } else {
         await crearEvento(dataToSend);
       }
 
-      setForm({
-        nombre: "",
-        descripcion: "",
-        lugar: "",
-        ciudad: "",
-        fechaEvento: "",
-        precio: "",
-        image: null,
-      });
-
+      setForm(FORM_VACIO);
       setEditando(null);
       setShowForm(false);
       cargarEventos();
     } catch (error) {
       console.error(error);
-      alert("Error al guardar el evento");
+      // El backend responde {"error": "..."} en los 400
+      setErrorForm(mensajeDeError(error, "Error al guardar el evento"));
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -91,10 +184,15 @@ function AdminEventos() {
       lugar: evento.lugar,
       ciudad: evento.ciudad,
       fechaEvento: evento.fechaEvento?.slice(0, 16),
-      precio: evento.precio,
+      precio: evento.precio ?? "",
+      modoVenta: getModoVenta(evento),
+      plataformaVenta: evento.plataformaVenta || "",
+      urlVenta: evento.urlVenta || "",
+      notaVenta: evento.notaVenta || "",
       image: null,
     });
-
+    setImagenActual(evento.imagenUrl || null);
+    setErrorForm("");
     setEditando(evento.id);
     setShowForm(true);
   };
@@ -106,188 +204,259 @@ function AdminEventos() {
         cargarEventos();
       } catch (error) {
         console.error("Error eliminando evento", error);
+        alert("Error al eliminar el evento");
       }
     }
   };
 
+  const set = (campo) => (e) => setForm({ ...form, [campo]: e.target.value });
+  const ahora = new Date();
+  const plataformaSel = PLATAFORMAS_VENTA[form.plataformaVenta];
+  const precioObligatorio = form.modoVenta === "MERCADO_PAGO";
+
   return (
-    <div className="min-h-screen text-gray-200">
-      <header className="bg-gray-900 border-b border-gray-700 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-yellow-400">
-              Panel de Administración - Eventos 🎤
-            </h1>
-            <p className="text-sm text-gray-400">
-              Gestión de shows y conciertos
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              setEditando(null);
-              setForm({
-                nombre: "",
-                descripcion: "",
-                lugar: "",
-                ciudad: "",
-                fechaEvento: "",
-                precio: "",
-                image: null,
-              });
-              setShowForm(true);
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold shadow"
-          >
-            + Agregar Evento
+    <div>
+      <PageHeader
+        eyebrow="Shows"
+        title="Eventos"
+        description="Gestión de shows y conciertos. Los próximos aparecen primero."
+        action={
+          <button onClick={abrirNuevo} className="btn-primary">
+            <Plus size={16} /> Nuevo evento
           </button>
-        </div>
-      </header>
+        }
+      />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-gray-900 rounded-xl shadow-lg border border-gray-700 overflow-x-auto">
-          <table className="min-w-full text-sm text-gray-300">
-            <thead className="bg-gray-800 text-yellow-400 uppercase text-xs">
-              <tr>
-                <th className="py-3 px-4">Nombre</th>
-                <th className="py-3 px-4">Ciudad</th>
-                <th className="py-3 px-4">Lugar</th>
-                <th className="py-3 px-4">Fecha</th>
-                <th className="py-3 px-4">Precio</th>
-                <th className="py-3 px-4">Imagen</th>
-                <th className="py-3 px-4">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {eventos.map((e) => (
-                <tr key={e.id} className="border-t border-gray-700 hover:bg-gray-800 transition">
-                  <td className="py-3 px-4 text-white">{e.nombre}</td>
-                  <td className="py-3 px-4 text-gray-400">{e.ciudad}</td>
-                  <td className="py-3 px-4 text-gray-400">{e.lugar}</td>
-                  <td className="py-3 px-4 text-gray-400">
-                    {new Date(e.fechaEvento).toLocaleString("es-AR")}
-                  </td>
-                  <td className="py-3 px-4 text-green-400 font-semibold">
-                    ${e.precio?.toLocaleString("es-AR")}
-                  </td>
-                  <td className="py-3 px-4">
-                    {e.imagenUrl ? (
-                      <img
-                        src={e.imagenUrl}
-                        alt={e.nombre}
-                        className="w-20 h-14 object-cover rounded-md border border-gray-700"
-                      />
-                    ) : (
-                      <span className="text-gray-500 italic">Sin imagen</span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 flex gap-3">
-                    <button
-                      onClick={() => handleEditar(e)}
-                      className="text-yellow-400 hover:text-yellow-300 font-semibold"
-                    >
-                      ✏️ Editar
-                    </button>
-                    <button
-                      onClick={() => handleEliminar(e.id)}
-                      className="text-red-500 hover:text-red-400 font-semibold"
-                    >
-                      🗑️ Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {eventos.length === 0 && (
-                <tr>
-                  <td colSpan="7" className="text-center py-6 text-gray-500 italic">
-                    No hay eventos cargados.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </main>
-
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-          <div className="bg-gray-900 border border-gray-700 p-6 rounded-xl shadow-2xl w-11/12 max-w-md relative mx-auto">
-            <button
-              onClick={() => setShowForm(false)}
-              className="absolute top-3 right-4 text-gray-400 hover:text-gray-200 text-lg"
-            >
-              ✖
-            </button>
-
-            <h2 className="text-xl font-bold mb-4 text-yellow-400">
-              {editando ? "Editar Evento" : "Nuevo Evento"}
-            </h2>
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input type="text" placeholder="Nombre" required
-                value={form.nombre}
-                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-
-              <textarea placeholder="Descripción" required
-                value={form.descripcion}
-                onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-
-              <input type="text" placeholder="Lugar" required
-                value={form.lugar}
-                onChange={(e) => setForm({ ...form, lugar: e.target.value })}
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-
-              <input type="text" placeholder="Ciudad" required
-                value={form.ciudad}
-                onChange={(e) => setForm({ ...form, ciudad: e.target.value })}
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-
-              <input type="datetime-local" required
-                value={form.fechaEvento}
-                onChange={(e) => setForm({ ...form, fechaEvento: e.target.value })}
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-
-              <input type="number" step="0.01" min="0" required
-                placeholder="Precio"
-                value={form.precio}
-                onChange={(e) => setForm({ ...form, precio: e.target.value })}
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-
-              {/* 🔥 INPUT IMAGEN RESTAURADO */}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
-                className="text-sm text-gray-300"
-              />
-
-              <div className="flex justify-end gap-3 mt-4">
-                <button type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white"
-                >
-                  Cancelar
-                </button>
-
-                <button type="submit"
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded"
-                >
-                  {editando ? "Actualizar" : "Crear"}
-                </button>
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="surface-card overflow-hidden">
+              <div className="skeleton aspect-[16/10] rounded-none" />
+              <div className="space-y-2 p-5">
+                <div className="skeleton h-5 w-3/4" />
+                <div className="skeleton h-3 w-1/2" />
               </div>
-            </form>
-          </div>
+            </div>
+          ))}
+        </div>
+      ) : eventos.length === 0 ? (
+        <EmptyState
+          icon={CalendarDays}
+          title="No hay eventos cargados"
+          text="Cargá un show y elegí por dónde se venden las entradas."
+          action={
+            <button onClick={abrirNuevo} className="btn-primary">
+              <Plus size={16} /> Nuevo evento
+            </button>
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {eventos.map((ev) => {
+            const pasado = new Date(ev.fechaEvento) < ahora;
+            const tienePrecio = ev.precio !== null && ev.precio !== undefined;
+            return (
+              <article
+                key={ev.id}
+                className={`surface-card flex flex-col overflow-hidden hover:border-white/20 ${pasado ? "opacity-60" : ""}`}
+              >
+                <div className="relative aspect-[16/10] overflow-hidden bg-night-900">
+                  {ev.imagenUrl ? (
+                    <img src={ev.imagenUrl} alt={ev.nombre} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="grid h-full place-items-center text-sm italic text-white/30">
+                      Sin imagen
+                    </span>
+                  )}
+                  <span className="absolute left-3 top-3 rounded-full bg-black/75 backdrop-blur">
+                    <Badge tone={pasado ? "neutral" : "green"}>{pasado ? "Finalizado" : "Próximo"}</Badge>
+                  </span>
+                  {tienePrecio && (
+                    <span className="absolute bottom-3 right-3 rounded-full bg-black/80 px-3 py-1 font-display text-lg tracking-wide text-bestia backdrop-blur">
+                      {formatMoney(ev.precio)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="font-display text-2xl leading-tight tracking-wide text-white">{ev.nombre}</h3>
+                  <p className="mt-3 flex items-center gap-2 text-sm text-white/60">
+                    <Clock size={14} className="shrink-0 text-bestia" />
+                    {formatFechaHora(ev.fechaEvento)}
+                  </p>
+                  <p className="mt-1.5 flex items-center gap-2 text-sm text-white/60">
+                    <MapPin size={14} className="shrink-0 text-bestia" />
+                    <span className="truncate">
+                      {ev.lugar} · {ev.ciudad}
+                    </span>
+                  </p>
+                  <div className="mt-3">
+                    <VentaBadge evento={ev} />
+                  </div>
+
+                  <div className="mt-auto flex items-center gap-2 pt-5">
+                    <button onClick={() => handleEditar(ev)} className="btn-outline btn-sm flex-1">
+                      <Pencil size={14} /> Editar
+                    </button>
+                    <button
+                      onClick={() => handleEliminar(ev.id)}
+                      className="icon-btn-danger"
+                      aria-label="Eliminar"
+                      title="Eliminar"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
+
+      <Modal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        title={editando ? "Editar evento" : "Nuevo evento"}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <Field label="Nombre">
+            <input type="text" placeholder="Nombre del show" required value={form.nombre} onChange={set("nombre")} className="form-input" />
+          </Field>
+
+          <Field label="Descripción">
+            <textarea placeholder="Descripción" required rows={4} value={form.descripcion} onChange={set("descripcion")} className="form-input resize-y" />
+          </Field>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Lugar">
+              <input type="text" placeholder="Ej: Bye Henry" required value={form.lugar} onChange={set("lugar")} className="form-input" />
+            </Field>
+            <Field label="Ciudad">
+              <input type="text" placeholder="Ej: La Plata" required value={form.ciudad} onChange={set("ciudad")} className="form-input" />
+            </Field>
+            <Field label="Fecha y hora">
+              <input type="datetime-local" required value={form.fechaEvento} onChange={set("fechaEvento")} className="form-input [color-scheme:dark]" />
+            </Field>
+            <Field
+              label={precioObligatorio ? "Precio" : "Precio (opcional)"}
+              hint={precioObligatorio ? null : "Solo informativo para este modo de venta."}
+            >
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                required={precioObligatorio}
+                placeholder="0"
+                value={form.precio}
+                onChange={set("precio")}
+                className="form-input"
+              />
+            </Field>
+          </div>
+
+          {/* Modo de venta */}
+          <fieldset className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <legend className="form-label px-1">¿Cómo se venden las entradas?</legend>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {MODOS_VENTA.map(({ value, label, Icon }) => {
+                const activo = form.modoVenta === value;
+                return (
+                  <label
+                    key={value}
+                    className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-3 text-sm font-semibold transition-colors ${
+                      activo
+                        ? "border-bestia bg-bestia/10 text-white"
+                        : "border-white/10 text-white/60 hover:border-white/25 hover:text-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="modoVenta"
+                      value={value}
+                      checked={activo}
+                      onChange={set("modoVenta")}
+                      className="sr-only"
+                    />
+                    <Icon size={16} className={activo ? "text-bestia" : ""} />
+                    {label}
+                  </label>
+                );
+              })}
+            </div>
+            <p className="mt-3 text-xs text-white/40">
+              {MODOS_VENTA.find((m) => m.value === form.modoVenta)?.descripcion}
+            </p>
+
+            {form.modoVenta === "EXTERNO" && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,180px)_1fr]">
+                <Field label="Plataforma">
+                  <select
+                    required
+                    value={form.plataformaVenta}
+                    onChange={set("plataformaVenta")}
+                    className="form-input [color-scheme:dark]"
+                  >
+                    <option value="">Elegir...</option>
+                    {Object.entries(PLATAFORMAS_VENTA).map(([key, p]) => (
+                      <option key={key} value={key}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Link de venta" hint={plataformaSel?.ayuda}>
+                  <input
+                    type="url"
+                    required
+                    maxLength={500}
+                    placeholder={plataformaSel?.placeholder || "https://..."}
+                    value={form.urlVenta}
+                    onChange={set("urlVenta")}
+                    className="form-input"
+                  />
+                </Field>
+              </div>
+            )}
+
+            <Field label="Nota (opcional)" hint={`${form.notaVenta.length}/200 · Se muestra en la página de Shows.`} className="mt-4">
+              <input
+                type="text"
+                maxLength={200}
+                placeholder={
+                  form.modoVenta === "SIN_VENTA_ONLINE" ? "Ej: Entradas en puerta" : "Ej: También en puerta"
+                }
+                value={form.notaVenta}
+                onChange={set("notaVenta")}
+                className="form-input"
+              />
+            </Field>
+          </fieldset>
+
+          <ImagePicker
+            file={form.image}
+            currentUrl={imagenActual}
+            onChange={(file) => setForm({ ...form, image: file })}
+            label="Imagen / flyer"
+          />
+
+          {errorForm && (
+            <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400" role="alert">
+              {errorForm}
+            </p>
+          )}
+
+          <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
+            <button type="button" onClick={() => setShowForm(false)} className="btn-outline">
+              Cancelar
+            </button>
+            <button type="submit" disabled={guardando} className="btn-primary disabled:opacity-50">
+              {guardando ? "Guardando..." : editando ? "Guardar cambios" : "Crear evento"}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

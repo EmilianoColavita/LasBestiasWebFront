@@ -4,6 +4,7 @@ import {
   crearInvitado,
   eliminarInvitado,
 } from "../services/invitados";
+import { Trash2, UserPlus } from "lucide-react";
 
 export default function InvitadosEvento({ eventoId }) {
   const [invitados, setInvitados] = useState([]);
@@ -67,95 +68,97 @@ export default function InvitadosEvento({ eventoId }) {
   return (
     <div>
       {cargando ? (
-        <p className="text-gray-400 text-sm">Cargando invitados...</p>
-      ) : invitados.length === 0 ? (
-        <p className="text-gray-500 italic text-sm">
-          No hay invitados cargados para este evento.
-        </p>
-      ) : (
-        <div className="bg-gray-900 rounded-xl border border-gray-700 overflow-x-auto">
-          <table className="min-w-full text-sm text-gray-300">
-            <thead className="bg-gray-800 text-yellow-400 uppercase text-xs">
-              <tr>
-                <th className="py-2 px-4 text-left">Nombre</th>
-                <th className="py-2 px-4 text-left">Apellido</th>
-                <th className="py-2 px-4 text-left">DNI</th>
-                <th className="py-2 px-4 text-left">Cargado</th>
-                <th className="py-2 px-4 text-left">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invitados.map((inv) => (
-                <tr key={inv.id} className="border-t border-gray-700">
-                  <td className="py-2 px-4 text-white">{inv.nombre}</td>
-                  <td className="py-2 px-4 text-white">{inv.apellido}</td>
-                  <td className="py-2 px-4">{inv.dni}</td>
-                  <td className="py-2 px-4 text-gray-400">
-                    {inv.fechaCarga
-                      ? new Date(inv.fechaCarga).toLocaleString("es-AR")
-                      : "-"}
-                  </td>
-                  <td className="py-2 px-4">
-                    <button
-                      onClick={() => handleEliminar(inv.id)}
-                      className="text-red-500 hover:text-red-400 font-semibold"
-                    >
-                      🗑️ Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-2">
+          <div className="skeleton h-10 w-full" />
+          <div className="skeleton h-10 w-full" />
         </div>
+      ) : invitados.length === 0 ? (
+        <p className="py-4 text-sm text-white/40">No hay invitados cargados para este evento.</p>
+      ) : (
+        <>
+          {/* Desktop */}
+          <div className="hidden overflow-x-auto rounded-xl border border-white/10 md:block">
+            <table className="min-w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-[11px] uppercase tracking-widest text-white/50">
+                  <th className="px-4 py-3 font-semibold">Nombre</th>
+                  <th className="px-4 py-3 font-semibold">Apellido</th>
+                  <th className="px-4 py-3 font-semibold">DNI</th>
+                  <th className="px-4 py-3 font-semibold">Cargado</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.06]">
+                {invitados.map((inv) => (
+                  <tr key={inv.id} className="hover:bg-white/[0.03]">
+                    <td className="px-4 py-3 font-semibold text-white">{inv.nombre}</td>
+                    <td className="px-4 py-3 text-white">{inv.apellido}</td>
+                    <td className="px-4 py-3 text-white/60">{inv.dni}</td>
+                    <td className="px-4 py-3 text-white/40">
+                      {inv.fechaCarga ? new Date(inv.fechaCarga).toLocaleString("es-AR") : "-"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleEliminar(inv.id)}
+                        className="icon-btn-danger ml-auto"
+                        aria-label="Eliminar invitado"
+                        title="Eliminar"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile */}
+          <ul className="space-y-2 md:hidden">
+            {invitados.map((inv) => (
+              <li key={inv.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/30 p-3">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-white">
+                    {inv.nombre} {inv.apellido}
+                  </p>
+                  <p className="text-xs text-white/40">DNI {inv.dni}</p>
+                </div>
+                <button
+                  onClick={() => handleEliminar(inv.id)}
+                  className="icon-btn-danger"
+                  aria-label="Eliminar invitado"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
-      <div className="mt-4">
-        <button
-          onClick={() => setMostrarForm(!mostrarForm)}
-          className="text-xs text-gray-500 hover:text-gray-400 underline underline-offset-2"
-        >
-          {mostrarForm ? "Cancelar" : "+ Agregar invitado"}
-        </button>
-
-        {mostrarForm && (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <input
-                type="text"
-                placeholder="Nombre"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                required
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-              <input
-                type="text"
-                placeholder="Apellido"
-                value={apellido}
-                onChange={(e) => setApellido(e.target.value)}
-                required
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
-              <input
-                type="text"
-                placeholder="DNI"
-                value={dni}
-                onChange={(e) => setDni(e.target.value)}
-                required
-                className="border border-gray-700 rounded p-2 bg-gray-800 text-white"
-              />
+      <div className="mt-5">
+        {!mostrarForm ? (
+          <button onClick={() => setMostrarForm(true)} className="btn-outline btn-sm">
+            <UserPlus size={14} /> Agregar invitado
+          </button>
+        ) : (
+          <form onSubmit={handleSubmit} className="rounded-xl border border-white/10 bg-black/30 p-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <input type="text" placeholder="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} required className="form-input" />
+              <input type="text" placeholder="Apellido" value={apellido} onChange={(e) => setApellido(e.target.value)} required className="form-input" />
+              <input type="text" placeholder="DNI" value={dni} onChange={(e) => setDni(e.target.value)} required className="form-input" />
             </div>
 
-            {error && <p className="text-red-400 text-sm">{error}</p>}
+            {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={guardando}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg self-start disabled:opacity-50"
-            >
-              {guardando ? "Agregando..." : "Guardar invitado"}
-            </button>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button type="submit" disabled={guardando} className="btn-primary btn-sm disabled:opacity-50">
+                {guardando ? "Agregando..." : "Guardar invitado"}
+              </button>
+              <button type="button" onClick={() => setMostrarForm(false)} className="btn-outline btn-sm">
+                Cancelar
+              </button>
+            </div>
           </form>
         )}
       </div>

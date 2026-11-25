@@ -33,16 +33,23 @@ function Musica() {
 
   return (
     <section id="musica" className="grain relative overflow-hidden bg-night-950 py-20 md:py-28">
-      {/* Fotografía original de fondo */}
+      {/* Fotografía original de fondo (micrófono), visible y con vida */}
       <div
-        className="absolute inset-0 bg-cover bg-[center_top] opacity-30 md:bg-center"
+        className="absolute inset-0 bg-cover bg-[position:35%_center] opacity-80 saturate-[1.1]"
         style={{ backgroundImage: "url('/images/fondo-microfono.jpeg')" }}
         aria-hidden="true"
       />
+      {/* Bordes superior/inferior fundidos con las secciones vecinas */}
       <div
-        className="absolute inset-0 bg-gradient-to-b from-black via-night-950/85 to-black"
+        className="absolute inset-0 bg-gradient-to-b from-black via-black/45 to-black"
         aria-hidden="true"
       />
+      {/* Leve viñeta lateral + tinte azul noche para mantener la paleta */}
+      <div
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)]"
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 bg-night-900/25 mix-blend-multiply" aria-hidden="true" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeader

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { authFetch } from "../api/authFetch";
+import { ScanLine, X, CheckCircle2, XCircle } from "lucide-react";
 
-export default function ScannerQR({ onValidacionExitosa }) {
+export default function ScannerQR({ onValidacionExitosa, autoStart = false }) {
   const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-  const [modoScanner, setModoScanner] = useState(false);
+  const [modoScanner, setModoScanner] = useState(autoStart);
   const [resultado, setResultado] = useState(null);
   const [procesando, setProcesando] = useState(false);
 
@@ -87,6 +88,8 @@ export default function ScannerQR({ onValidacionExitosa }) {
     }, 2000);
   };
 
+  const exito = resultado?.tipo === "success";
+
   return (
     <div className="mb-6">
       {/* 🔊 Audios ocultos */}
@@ -98,19 +101,18 @@ export default function ScannerQR({ onValidacionExitosa }) {
           setModoScanner(!modoScanner);
           setResultado(null);
         }}
-        className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white font-semibold"
+        className={modoScanner ? "btn-outline w-full sm:w-auto" : "btn-primary w-full sm:w-auto"}
       >
-        {modoScanner ? "Cerrar Escáner" : "Escanear Entrada"}
+        {modoScanner ? <X size={16} /> : <ScanLine size={16} />}
+        {modoScanner ? "Cerrar escáner" : "Escanear entrada"}
       </button>
 
       {modoScanner && (
-        <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 mt-4 text-center">
-          <h2 className="text-lg text-yellow-400 mb-4">
-            Escanear QR 🎟️
-          </h2>
+        <div className="surface-card mt-4 p-4 text-center sm:p-6">
+          <p className="form-label">Apuntá la cámara al código QR de la entrada</p>
 
-          <div className="flex justify-center">
-            <div className="w-full max-w-sm md:max-w-md lg:max-w-lg">
+          <div className="mt-3 flex justify-center">
+            <div className="w-full max-w-sm overflow-hidden rounded-2xl border-2 border-bestia/50 md:max-w-md">
               <Scanner
                 onScan={handleScan}
                 onError={(error) => console.error(error)}
@@ -120,7 +122,6 @@ export default function ScannerQR({ onValidacionExitosa }) {
                     width: "100%",
                     height: "280px",
                     objectFit: "cover",
-                    borderRadius: "12px",
                   },
                 }}
               />
@@ -129,21 +130,21 @@ export default function ScannerQR({ onValidacionExitosa }) {
 
           {resultado && (
             <div
-              className={`mt-6 p-6 rounded-xl text-white font-bold text-lg ${
-                resultado.tipo === "success"
-                  ? "bg-green-600"
-                  : "bg-red-600"
+              className={`mx-auto mt-5 max-w-md rounded-2xl p-5 text-white ${
+                exito ? "bg-emerald-600" : "bg-red-600"
               }`}
             >
-              {resultado.tipo === "success" ? (
+              {exito ? (
                 <>
-                  <div className="text-2xl mb-2">✅ VÁLIDO</div>
-                  <div className="text-xl">{resultado.nombre}</div>
+                  <CheckCircle2 size={36} className="mx-auto mb-2" />
+                  <div className="font-display text-3xl tracking-wide">Válido</div>
+                  <div className="mt-1 text-lg font-semibold">{resultado.nombre}</div>
                 </>
               ) : (
                 <>
-                  <div className="text-2xl mb-2">❌ ENTRADA INVÁLIDA</div>
-                  <div>{resultado.mensaje}</div>
+                  <XCircle size={36} className="mx-auto mb-2" />
+                  <div className="font-display text-3xl tracking-wide">Entrada inválida</div>
+                  <div className="mt-1 text-sm">{resultado.mensaje}</div>
                 </>
               )}
             </div>

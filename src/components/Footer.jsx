@@ -1,14 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { SOCIAL_LINKS } from "../constants/social";
-
-const LINKS = [
-  { label: "Inicio", to: "/" },
-  { label: "Noticias", to: "/noticias" },
-  { label: "Música", to: "/musica" },
-  { label: "Videos", to: "/#videos" },
-  { label: "Shows", to: "/shows" },
-  { label: "Contacto", to: "/contacto" },
-];
 
 // Borde de papel rasgado: puntos pseudoaleatorios con semilla fija (siempre igual)
 function buildTear() {
@@ -47,12 +38,13 @@ function TornEdge() {
   );
 }
 
-// Rutas donde no se muestra el pie (Contacto ya tiene las redes y el email)
-const SIN_FOOTER = ["/contacto"];
+// Rutas donde no se muestra el pie (Contacto ya tiene las redes y el email;
+// login y el panel de administración son pantallas internas)
+const SIN_FOOTER = ["/contacto", "/login"];
 
 function Footer() {
   const { pathname } = useLocation();
-  if (SIN_FOOTER.includes(pathname)) return null;
+  if (SIN_FOOTER.includes(pathname) || pathname.startsWith("/admin")) return null;
 
   return (
     <footer className="relative overflow-hidden bg-black">
@@ -99,22 +91,9 @@ function Footer() {
 
       {/* Barra inferior */}
       <div className="relative z-10 border-t border-white/10 bg-black/60 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-5 py-5 sm:px-8 md:flex-row md:justify-between">
-          <p className="text-[11px] uppercase tracking-widest text-white/40">
-            © 2026 Las Bestias — Todos los derechos reservados
-          </p>
-          <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2">
-            {LINKS.map((l) => (
-              <Link
-                key={l.label}
-                to={l.to}
-                className="text-[11px] font-semibold uppercase tracking-widest text-white/50 transition-colors hover:text-bestia"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+        <p className="mx-auto max-w-7xl px-5 py-5 text-center text-[11px] uppercase tracking-widest text-white/40 sm:px-8">
+          © {new Date().getFullYear()} Las Bestias — Todos los derechos reservados
+        </p>
       </div>
     </footer>
   );

@@ -32,7 +32,11 @@ export async function getEventoById(id) {
 
 
 
-export const crearEvento = async (evento) => {
+// Multipart común a crear y actualizar.
+// - precio es opcional: si no hay valor no se envía (nunca como "null").
+// - modoVenta siempre se envía desde este frontend, así el backend toma los 4 campos
+//   de venta del request (urlVenta/plataformaVenta solo aplican a EXTERNO).
+function buildEventoFormData(evento) {
   const formData = new FormData();
 
   formData.append("nombre", evento.nombre);
@@ -40,11 +44,31 @@ export const crearEvento = async (evento) => {
   formData.append("lugar", evento.lugar);
   formData.append("ciudad", evento.ciudad);
   formData.append("fechaEvento", evento.fechaEvento);
-  formData.append("precio", evento.precio);
+
+  if (evento.precio !== null && evento.precio !== undefined && evento.precio !== "") {
+    formData.append("precio", evento.precio);
+  }
+
+  formData.append("modoVenta", evento.modoVenta || "MERCADO_PAGO");
+
+  if (evento.modoVenta === "EXTERNO") {
+    formData.append("plataformaVenta", evento.plataformaVenta);
+    formData.append("urlVenta", evento.urlVenta);
+  }
+
+  if (evento.notaVenta && evento.notaVenta.trim()) {
+    formData.append("notaVenta", evento.notaVenta.trim());
+  }
 
   if (evento.image) {
     formData.append("image", evento.image);
   }
+
+  return formData;
+}
+
+export const crearEvento = async (evento) => {
+  const formData = buildEventoFormData(evento);
 
   const response = await api.post("/api/eventos", formData, {
     headers: {
@@ -56,18 +80,7 @@ export const crearEvento = async (evento) => {
 };
 
 export const actualizarEvento = async (id, evento) => {
-  const formData = new FormData();
-
-  formData.append("nombre", evento.nombre);
-  formData.append("descripcion", evento.descripcion);
-  formData.append("lugar", evento.lugar);
-  formData.append("ciudad", evento.ciudad);
-  formData.append("fechaEvento", evento.fechaEvento);
-  formData.append("precio", evento.precio);
-
-  if (evento.image) {
-    formData.append("image", evento.image);
-  }
+  const formData = buildEventoFormData(evento);
 
   const response = await api.put(`/api/eventos/${id}`, formData, {
     headers: {

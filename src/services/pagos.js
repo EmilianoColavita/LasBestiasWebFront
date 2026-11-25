@@ -24,7 +24,16 @@ export async function crearPreferenciaPago({
   if (!response.ok) {
     const text = await response.text();
     console.error(text);
-    throw new Error("Error al crear la preferencia de pago");
+    // En los 400 el backend responde {"error": "mensaje"}
+    let mensaje = null;
+    try {
+      mensaje = JSON.parse(text)?.error || null;
+    } catch {
+      // respuesta sin JSON: se usa el mensaje genérico
+    }
+    const error = new Error(mensaje || "Error al crear la preferencia de pago");
+    error.mensajeBackend = mensaje;
+    throw error;
   }
 
   return await response.json();

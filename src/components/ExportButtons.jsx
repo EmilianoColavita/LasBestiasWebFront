@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { Download } from "lucide-react";
 
 export default function ExportButtons({ entradas, eventos }) {
   const getEventoNombre = (id) => {
@@ -87,26 +88,18 @@ export default function ExportButtons({ entradas, eventos }) {
   };
 
   return (
-    <div className="flex gap-4 mb-4 flex-wrap">
-      <button
-        onClick={exportarCSV}
-        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
-      >
-        Exportar CSV
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="mr-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/40">
+        <Download size={14} /> Exportar
+      </span>
+      <button onClick={exportarCSV} className="btn-outline btn-sm">
+        CSV
       </button>
-
-      <button
-        onClick={exportarExcel}
-        className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg"
-      >
-        Exportar Excel
+      <button onClick={exportarExcel} className="btn-outline btn-sm">
+        Excel
       </button>
-
-      <button
-        onClick={exportarPDF}
-        className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
-      >
-        Exportar PDF
+      <button onClick={exportarPDF} className="btn-outline btn-sm">
+        PDF
       </button>
     </div>
   );

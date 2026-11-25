@@ -20,7 +20,7 @@ function HeroShell({ children, scrollCue = false }) {
         el logo del flyer; el borde izquierdo se funde con una máscara.
       */}
       <div
-        className="absolute inset-0 bg-cover bg-[position:76%_center] lg:left-[7%] lg:right-[-7%] lg:bg-center lg:[mask-image:linear-gradient(to_right,transparent,black_18%)]"
+        className="absolute inset-0 bg-cover bg-left lg:left-[7%] lg:right-[-7%] lg:bg-center lg:[mask-image:linear-gradient(to_right,transparent,black_18%)]"
         style={{ backgroundImage: "url('/images/fondo1.png')" }}
         aria-hidden="true"
       />
@@ -29,8 +29,8 @@ function HeroShell({ children, scrollCue = false }) {
         className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"
         aria-hidden="true"
       />
-      {/* En mobile el logo queda detrás del texto: se atenúa más */}
-      <div className="absolute inset-0 bg-black/55 lg:hidden" aria-hidden="true" />
+      {/* En mobile se muestra la parte del fondo sin logo (el logo va junto al flyer) */}
+      <div className="absolute inset-0 bg-black/35 lg:hidden" aria-hidden="true" />
       {/* Toque azul noche */}
       <div
         className="absolute -left-40 top-1/3 h-[32rem] w-[32rem] rounded-full bg-night-600/25 blur-[120px]"
@@ -152,9 +152,13 @@ function Hero() {
           </time>
         </motion.header>
 
-        {/* Flyer de la misma noticia: más chico, tipo afiche pegado */}
+        {/*
+          Flyer de la misma noticia: más chico, tipo afiche pegado.
+          En mobile/tablet va acompañado del logo a la derecha (misma composición que desktop,
+          donde el logo lo aporta el fondo).
+        */}
         <motion.div
-          className="flex justify-center lg:col-span-3 lg:col-start-6 lg:row-span-2 lg:row-start-1"
+          className="flex items-center justify-center gap-5 sm:gap-10 lg:col-span-3 lg:col-start-6 lg:row-span-2 lg:row-start-1"
           initial={reduce ? false : { opacity: 0, y: 30, rotate: 0 }}
           animate={{ opacity: 1, y: 0, rotate: 0 }}
           transition={{ duration: 1, ease, delay: 0.15 }}
@@ -162,7 +166,7 @@ function Hero() {
           <Link
             to={link}
             aria-label={`Leer: ${ultimaNoticia.titulo}`}
-            className="group block w-full max-w-[240px] rotate-2 bg-[#efece6] p-2 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.95)] transition-transform duration-500 ease-out hover:-translate-y-1 hover:rotate-0 sm:max-w-[280px] lg:max-w-none"
+            className="group block w-[56%] max-w-[260px] shrink-0 rotate-2 bg-[#efece6] p-1.5 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.95)] transition-transform duration-500 ease-out hover:-translate-y-1 hover:rotate-0 sm:p-2 lg:w-full lg:max-w-none"
           >
             <img
               src={ultimaNoticia.imagenUrl}
@@ -170,6 +174,13 @@ function Hero() {
               className="block max-h-[62vh] w-full object-contain"
             />
           </Link>
+
+          <img
+            src="/images/logo.png"
+            alt=""
+            aria-hidden="true"
+            className="w-[34%] max-w-[200px] opacity-80 drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] lg:hidden"
+          />
         </motion.div>
 
         {/* Cuerpo: extracto + CTA */}
